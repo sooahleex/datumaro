@@ -179,6 +179,9 @@ class DatasetItemStorageDatasetView(IDataset):
         def media_type(self):
             return self.parent.media_type()
 
+        def hash_key(self):
+            return self.parent.hash_key()
+
     def __init__(
         self,
         parent: DatasetItemStorage,
@@ -963,6 +966,9 @@ class Dataset(IDataset):
     def media_type(self) -> Type[MediaElement]:
         return self._data.media_type()
 
+    def hash_key(self):
+        return self._data.hash_key()
+
     def get(self, id: str, subset: Optional[str] = None) -> Optional[DatasetItem]:
         return self._data.get(id, subset)
 
@@ -1296,6 +1302,7 @@ class Dataset(IDataset):
         env: Optional[Environment] = None,
         progress_reporter: Optional[ProgressReporter] = None,
         error_policy: Optional[ImportErrorPolicy] = None,
+        save_hash: Optional[bool] = False,
         **kwargs,
     ) -> Dataset:
         """
@@ -1386,6 +1393,12 @@ class Dataset(IDataset):
 
         dataset._source_path = path
         dataset._format = format
+
+        if save_hash:
+            item_hash_list = []
+            for item in dataset:
+                hash_key = item.hash_key
+                item_hash_list.append(hash_key)
 
         return dataset
 

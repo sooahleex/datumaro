@@ -39,8 +39,10 @@ from datumaro.components.errors import (
 from datumaro.components.format_detection import FormatDetectionConfidence, FormatDetectionContext
 from datumaro.components.media import Image, MediaElement, PointCloud
 from datumaro.components.progress_reporting import NullProgressReporter, ProgressReporter
+from datumaro.components.model_inference import inference
 from datumaro.util import is_method_redefined
 from datumaro.util.attrs_util import default_if_none, not_empty
+
 
 DEFAULT_SUBSET_NAME = "default"
 
@@ -176,6 +178,10 @@ class DatasetItem:
         )
         return isinstance(self.media, PointCloud)
 
+    @property
+    def hash_key(self):
+        hash_key = inference(self.media)
+        return hash_key
 
 DatasetInfo = Dict[str, Any]
 CategoriesInfo = Dict[AnnotationType, Categories]
