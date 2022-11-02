@@ -1320,6 +1320,7 @@ class Dataset(IDataset):
                 Implies earger loading.
             error_policy - An object to report format-related errors.
                 Implies earger loading.
+            save_hash - 
             **kwargs - Parameters for the format
         """
 
@@ -1363,6 +1364,9 @@ class Dataset(IDataset):
                     progress_reporter=pbar, error_policy=error_policy
                 )
 
+                if save_hash:
+                    extractor_kwargs['save_hash'] = save_hash
+
                 try:
                     extractors.append(
                         env.make_extractor(src_conf.format, src_conf.url, **extractor_kwargs)
@@ -1387,18 +1391,14 @@ class Dataset(IDataset):
 
             dataset = cls.from_extractors(*extractors, env=env)
             if eager:
-                dataset.init_cache()
+                dataset.init_cache()    
         except _ImportFail as e:
             raise e.__cause__
 
         dataset._source_path = path
         dataset._format = format
 
-        if save_hash:
-            item_hash_list = []
-            for item in dataset:
-                hash_key = item.hash_key
-                item_hash_list.append(hash_key)
+
 
         return dataset
 
