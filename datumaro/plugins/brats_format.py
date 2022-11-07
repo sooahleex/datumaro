@@ -21,7 +21,7 @@ class BratsPath:
 
 
 class BratsExtractor(SourceExtractor):
-    def __init__(self, path):
+    def __init__(self, path, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
 
@@ -34,6 +34,7 @@ class BratsExtractor(SourceExtractor):
         super().__init__(subset=subset, media_type=MultiframeImage)
 
         self._root_dir = osp.dirname(path)
+        self._save_hash = save_hash
         self._categories = self._load_categories()
         self._items = list(self._load_items(path).values())
 

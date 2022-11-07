@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 from attr import attrs, field
 import numpy as np
+from PIL import Image
 
 import torch
 from torch import nn
@@ -24,6 +25,18 @@ from torch.autograd import Function
 
 device = "cpu"
 model_folder = "./tests/assets/searcher"
+
+model_visual = {
+    "RN50": None,
+    "RN101": None,
+    "RN50x4": None,
+    "RN50x16": None,
+    "RN50x64": None,
+    "ViT-B/32": None,
+    "ViT-B/16": None,
+    "ViT-L/14": None,
+    "ViT-L/14@336px": None,
+}
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -429,13 +442,21 @@ def _download(url: str, root: str):
 
     return download_target
 
-def load_model(download_root: str = None):
+def load_model(download_root: str = None, model_name: str = "ViT-B/32"):
     # model, _ = clip.load("ViT-B/32", device=device, jit=True)
     # model_path = os.path.join(model_folder, "ViT-B_32.pth")
     # model = CLIP()
     # model.load_state_dict(torch.load(model_path))
 
-    model_path = _download(_MODELS["ViT-B/32"], download_root or os.path.expanduser("~/.cache/clip"))
+    # model = model_visual[model_name]
+    # if not model:
+    #     model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
+    #     with open(model_path, 'rb') as opened_file:
+    #     #     # loading JIT archive
+    #         model = torch.jit.load(opened_file, map_location="cpu").eval()
+    #     model_visual[model_name] = model.visual
+
+    model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
     with open(model_path, 'rb') as opened_file:
     #     # loading JIT archive
         model = torch.jit.load(opened_file, map_location="cpu").eval()
@@ -520,7 +541,7 @@ def inference(image):
 
     trans = transforms.Compose(
         [
-            transforms.ToPILImage(),
+            # transforms.ToPILImage(),
             transforms.ToTensor(),
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -529,6 +550,10 @@ def inference(image):
     )
 
     img = np.uint8(image.data)
+    img = Image.fromarray(img)
+
+    if np.array(img).ndim == 2:
+        img = img.convert('RGB')
     img = trans(img)
     img = np.expand_dims(img, axis=0)
     img = torch.Tensor(img)
@@ -539,4 +564,8 @@ def inference(image):
 
     img_features = encode_discrete(img_features)
 
-    return img_features
+    img_features = img_features.detach().numpy() >= 0
+    hash_key = np.packbits(img_features, axis=-1)
+    # hash_key = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_key))
+
+    return hash_key
