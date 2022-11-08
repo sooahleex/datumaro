@@ -19,8 +19,8 @@ def calculate_hamming(B1, B2):
     :return: hamming distance [r]
     """
     q = B2.shape[1] # max inner product value
-    # distH = 0.5 * (q - B1@B2.transpose())
-    distH = q - B1@B2.transpose()
+    distH = 0.5 * (q - B1@B2.transpose())
+    # distH = q - B1@B2.transpose()
     return distH
 
 def hamming_distance(chaine1, chaine2):

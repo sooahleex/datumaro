@@ -444,46 +444,76 @@ def _download(url: str, root: str):
 
 def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: bool=False):
     # model, _ = clip.load("ViT-B/32", device=device, jit=True)
-    # model_path = os.path.join(model_folder, "ViT-B_32.pth")
-    # model = CLIP()
-    # model.load_state_dict(torch.load(model_path))
 
-    # model = model_visual[model_name]
+    # import time
+    # start_time = time.time()
+    model = model_visual[model_name]
+    if not model:
+        model_path = os.path.join(model_folder, "ViT-B_32.pth")
+        state_dict = torch.load(model_path, map_location="cpu")
+
+        vision_width = state_dict["visual.conv1.weight"].shape[0]
+        vision_layers = len([k for k in state_dict.keys() if k.startswith("visual.") and k.endswith(".attn.in_proj_weight")])
+        vision_patch_size = state_dict["visual.conv1.weight"].shape[-1]
+        grid_size = round((state_dict["visual.positional_embedding"].shape[0] - 1) ** 0.5)
+        image_resolution = vision_patch_size * grid_size
+        embed_dim = state_dict["text_projection"].shape[1]
+        context_length = state_dict["positional_embedding"].shape[0]
+        vocab_size = state_dict["token_embedding.weight"].shape[0]
+        transformer_width = state_dict["ln_final.weight"].shape[0]
+        transformer_heads = transformer_width // 64
+        transformer_layers = len(set(k.split(".")[2] for k in state_dict if k.startswith("transformer.resblocks")))
+
+        model = CLIP(
+            embed_dim,
+            image_resolution, vision_layers, vision_width, vision_patch_size,
+            context_length, vocab_size, transformer_width, transformer_heads, transformer_layers
+        )
+        for key in ["input_resolution", "context_length", "vocab_size"]:
+            if key in state_dict:
+                del state_dict[key]
+
+        # model = CLIP()
+        model.load_state_dict(state_dict, device)
+        model = model.to(device)
+        model.eval()
     # if not model:
     #     model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
     #     with open(model_path, 'rb') as opened_file:
     #     #     # loading JIT archive
-    #         model = torch.jit.load(opened_file, map_location="cpu").eval()
+    #         model = torch.jit.load(opened_file, map_location=device if jit else "cpu").eval()
     #     model_visual[model_name] = model.visual
 
-    model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
-    with open(model_path, 'rb') as opened_file:
-    #     # loading JIT archive
-        model = torch.jit.load(opened_file, map_location=device if jit else "cpu").eval()
+    # model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
+    # with open(model_path, 'rb') as opened_file:
+    # #     # loading JIT archive
+    #     model = torch.jit.load(opened_file, map_location=device if jit else "cpu").eval()
 
     # patch the device names
-    device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])
-    device_node = [n for n in device_holder.graph.findAllNodes("prim::Constant") if "Device" in repr(n)][-1]
-    
-    def patch_device(module):
-        try:
-            graphs = [module.graph] if hasattr(module, "graph") else []
-        except RuntimeError:
-            graphs = []
+        device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])
+        device_node = [n for n in device_holder.graph.findAllNodes("prim::Constant") if "Device" in repr(n)][-1]
+        
+        def patch_device(module):
+            try:
+                graphs = [module.graph] if hasattr(module, "graph") else []
+            except RuntimeError:
+                graphs = []
 
-        if hasattr(module, "forward1"):
-            graphs.append(module.forward1.graph)
+            if hasattr(module, "forward1"):
+                graphs.append(module.forward1.graph)
 
-        for graph in graphs:
-            for node in graph.findAllNodes("prim::Constant"):
-                if "value" in node.attributeNames() and str(node["value"]).startswith("cuda"):
-                    node.copyAttributes(device_node)
+            for graph in graphs:
+                for node in graph.findAllNodes("prim::Constant"):
+                    if "value" in node.attributeNames() and str(node["value"]).startswith("cuda"):
+                        node.copyAttributes(device_node)
 
-    model.to(device)
-    model.apply(patch_device)
-    patch_device(model.encode_image)
-    patch_device(model.encode_text)
+        model.to(device)
+        model.apply(patch_device)
+        patch_device(model.encode_image)
+        patch_device(model.encode_text)
+    model_visual[model_name] = model
 
+    # print('model download time: ', time.time()-start_time)
     # patch dtype to float32 on CPU
     # if str(device) == "cpu":
     #     float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
@@ -560,13 +590,12 @@ def inference(image):
     img = img.to(device, dtype=torch.float)
 
     img_features = model.encode_image(img)
+    img_features = encode_discrete(img_features)
     img_features = F.normalize(img_features, dim=-1)
 
-    img_features = encode_discrete(img_features)
-
     img_features = img_features.cpu()
-    img_features = img_features.detach().numpy() >= 0
-    hash_key = np.packbits(img_features, axis=-1)
+    hash_key = img_features.detach().numpy() >= 0
+    # hash_key = np.packbits(img_features, axis=-1)
     # hash_key = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_key))
 
     return hash_key
