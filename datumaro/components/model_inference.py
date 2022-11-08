@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
-import os.path as osp
+
 import hashlib
 import urllib
 import warnings
@@ -12,7 +12,6 @@ from collections import OrderedDict
 from typing import Union, Tuple
 from tqdm import tqdm
 
-from attr import attrs, field
 import numpy as np
 from PIL import Image
 
@@ -23,7 +22,8 @@ import torch.nn.functional as F
 from torch.autograd import Function
 
 
-device = "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print('#### device: ', device)
 model_folder = "./tests/assets/searcher"
 
 model_visual = {
@@ -442,7 +442,7 @@ def _download(url: str, root: str):
 
     return download_target
 
-def load_model(download_root: str = None, model_name: str = "ViT-B/32"):
+def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: bool=False):
     # model, _ = clip.load("ViT-B/32", device=device, jit=True)
     # model_path = os.path.join(model_folder, "ViT-B_32.pth")
     # model = CLIP()
@@ -459,7 +459,7 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32"):
     model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
     with open(model_path, 'rb') as opened_file:
     #     # loading JIT archive
-        model = torch.jit.load(opened_file, map_location="cpu").eval()
+        model = torch.jit.load(opened_file, map_location=device if jit else "cpu").eval()
 
     # patch the device names
     device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])
@@ -485,32 +485,32 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32"):
     patch_device(model.encode_text)
 
     # patch dtype to float32 on CPU
-    if str(device) == "cpu":
-        float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
-        float_input = list(float_holder.graph.findNode("aten::to").inputs())[1]
-        float_node = float_input.node()
+    # if str(device) == "cpu":
+    #     float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
+    #     float_input = list(float_holder.graph.findNode("aten::to").inputs())[1]
+    #     float_node = float_input.node()
 
-        def patch_float(module):
-            try:
-                graphs = [module.graph] if hasattr(module, "graph") else []
-            except RuntimeError:
-                graphs = []
+    #     def patch_float(module):
+    #         try:
+    #             graphs = [module.graph] if hasattr(module, "graph") else []
+    #         except RuntimeError:
+    #             graphs = []
 
-            if hasattr(module, "forward1"):
-                graphs.append(module.forward1.graph)
+    #         if hasattr(module, "forward1"):
+    #             graphs.append(module.forward1.graph)
 
-            for graph in graphs:
-                for node in graph.findAllNodes("aten::to"):
-                    inputs = list(node.inputs())
-                    for i in [1, 2]:  # dtype can be the second or third argument to aten::to()
-                        if inputs[i].node()["value"] == 5:
-                            inputs[i].node().copyAttributes(float_node)
+    #         for graph in graphs:
+    #             for node in graph.findAllNodes("aten::to"):
+    #                 inputs = list(node.inputs())
+    #                 for i in [1, 2]:  # dtype can be the second or third argument to aten::to()
+    #                     if inputs[i].node()["value"] == 5:
+    #                         inputs[i].node().copyAttributes(float_node)
 
-        model.apply(patch_float)
-        patch_float(model.encode_image)
-        patch_float(model.encode_text)
+    #     model.apply(patch_float)
+    #     patch_float(model.encode_image)
+    #     patch_float(model.encode_text)
 
-        model.float()
+    #     model.float()
     # model.eval()
     return model
 
@@ -564,6 +564,7 @@ def inference(image):
 
     img_features = encode_discrete(img_features)
 
+    img_features = img_features.cpu()
     img_features = img_features.detach().numpy() >= 0
     hash_key = np.packbits(img_features, axis=-1)
     # hash_key = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_key))

@@ -48,7 +48,7 @@ class Searcher:
 
     def search_topk(self, item: DatasetItem, topk: Optional[int]=None):
         """
-        
+        Search topk similar results based on hamming distance for query DatasetItem
         """
         if not topk:
             topk = self._topk

@@ -45,7 +45,7 @@ Cifar10Label = [
 
 
 class CifarExtractor(SourceExtractor):
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Can't read annotation file '%s'" % path)
 
@@ -54,6 +54,7 @@ class CifarExtractor(SourceExtractor):
 
         super().__init__(subset=subset)
 
+        self._save_hash = save_hash
         self._categories = self._load_categories(osp.dirname(path))
         self._items = list(self._load_items(path).values())
 
@@ -151,7 +152,7 @@ class CifarExtractor(SourceExtractor):
                 image = Image(data=image)
 
             items[item_id] = DatasetItem(
-                id=item_id, subset=self._subset, media=image, annotations=annotations
+                id=item_id, subset=self._subset, media=image, annotations=annotations, save_hash=self._save_hash
             )
 
         return items
