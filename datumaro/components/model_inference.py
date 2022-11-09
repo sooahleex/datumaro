@@ -26,7 +26,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print('#### device: ', device)
 model_folder = "./tests/assets/searcher"
 
-model_visual = {
+model = {
     "RN50": None,
     "RN101": None,
     "RN50x4": None,
@@ -447,8 +447,8 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
 
     # import time
     # start_time = time.time()
-    model = model_visual[model_name]
-    if not model:
+    model_ = model[model_name]
+    if not model_:
         model_path = os.path.join(model_folder, "ViT-B_32.pth")
         state_dict = torch.load(model_path, map_location="cpu")
 
@@ -464,7 +464,7 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
         transformer_heads = transformer_width // 64
         transformer_layers = len(set(k.split(".")[2] for k in state_dict if k.startswith("transformer.resblocks")))
 
-        model = CLIP(
+        model_ = CLIP(
             embed_dim,
             image_resolution, vision_layers, vision_width, vision_patch_size,
             context_length, vocab_size, transformer_width, transformer_heads, transformer_layers
@@ -474,9 +474,9 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
                 del state_dict[key]
 
         # model = CLIP()
-        model.load_state_dict(state_dict, device)
-        model = model.to(device)
-        model.eval()
+        model_.load_state_dict(state_dict, device)
+        model_ = model_.to(device)
+        model_.eval()
     # if not model:
     #     model_path = _download(_MODELS[model_name], download_root or os.path.expanduser("~/.cache/clip"))
     #     with open(model_path, 'rb') as opened_file:
@@ -507,11 +507,11 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
                     if "value" in node.attributeNames() and str(node["value"]).startswith("cuda"):
                         node.copyAttributes(device_node)
 
-        model.to(device)
-        model.apply(patch_device)
-        patch_device(model.encode_image)
-        patch_device(model.encode_text)
-    model_visual[model_name] = model
+        model_.to(device)
+        model_.apply(patch_device)
+        patch_device(model_.encode_image)
+        patch_device(model_.encode_text)
+    model[model_name] = model_
 
     # print('model download time: ', time.time()-start_time)
     # patch dtype to float32 on CPU
@@ -542,7 +542,7 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
 
     #     model.float()
     # model.eval()
-    return model
+    return model_
 
 class hash(Function):
     @staticmethod
