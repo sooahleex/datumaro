@@ -595,6 +595,7 @@ def inference(image):
 
     img_features = img_features.cpu()
     hash_key = img_features.detach().numpy() >= 0
+    hash_key = hash_key*1
     # hash_key = np.packbits(img_features, axis=-1)
     # hash_key = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_key))
 
