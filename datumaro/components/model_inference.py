@@ -611,7 +611,8 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
     return model_
 
 def inference(item):
-    if isinstance(item.data, type(None)) or isinstance(item, Video):
+    assert not isinstance(item, Video), f"Media type should be Image, Current type={type(item)}"
+    if isinstance(item.data, type(None)):
         return []
 
     model = load_model()

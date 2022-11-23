@@ -26,7 +26,7 @@ class _KittiExtractor(SourceExtractor):
         if not subset:
             subset = osp.splitext(osp.basename(path))[0]
         self._subset = subset
-        super().__init__(subset=subset, save_hash=self._save_hash)
+        super().__init__(subset=subset)
 
         self._categories = self._load_categories(osp.dirname(self._path))
         self._items = list(self._load_items().values())
@@ -156,10 +156,10 @@ class _KittiExtractor(SourceExtractor):
 
 
 class KittiSegmentationExtractor(_KittiExtractor):
-    def __init__(self, path):
-        super().__init__(path, task=KittiTask.segmentation)
+    def __init__(self, path, save_hash=False):
+        super().__init__(path, task=KittiTask.segmentation, save_hash=save_hash)
 
 
 class KittiDetectionExtractor(_KittiExtractor):
-    def __init__(self, path):
-        super().__init__(path, task=KittiTask.detection)
+    def __init__(self, path, save_hash=False):
+        super().__init__(path, task=KittiTask.detection, save_hash=save_hash)
