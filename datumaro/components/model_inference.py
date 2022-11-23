@@ -23,6 +23,8 @@ from torchvision import transforms
 import torch.nn.functional as F
 from torch.autograd import Function
 
+from datumaro.components.media import MultiframeImage, Video
+
 if packaging.version.parse(torch.__version__) < packaging.version.parse("1.7.1"):
     warnings.warn("PyTorch version 1.7.1 or higher is recommended")
 
@@ -609,21 +611,43 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
     return model_
 
 def inference(item):
+    if isinstance(item.data, type(None)) or isinstance(item, Video):
+        return []
+
     model = load_model()
+
+    trans = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.228, 0.224, 0.225]),
+        ]
+    )
 
     if isinstance(item, str):
         text = tokenize(f"a photo of a {item}").to(device)
         features = model.encode_text(text)
-    else:
-        trans = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.228, 0.224, 0.225]),
-            ]
-        )
+    elif isinstance(item, MultiframeImage):
+        for frame in item.data:
+            img = np.uint8(frame.data)
+            img = Image.fromarray(img)
 
+            if np.array(img).ndim == 2:
+                img = img.convert('RGB')
+            img = trans(img)
+            img = np.expand_dims(img, axis=0)
+            img = torch.Tensor(img)
+            img = img.to(device, dtype=torch.float)
+
+            features = model.encode_image(img)
+
+            features = features.cpu()
+            hash_key = features.detach().numpy() >= 0
+            hash_key = hash_key*1
+            hash_string = np.packbits(hash_key, axis=-1)
+            hash_string = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_string))
+    else:
         img = np.uint8(item.data)
         img = Image.fromarray(img)
 

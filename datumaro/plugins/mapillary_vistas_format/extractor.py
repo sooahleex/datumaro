@@ -34,7 +34,7 @@ from .format import (
 
 class _MapillaryVistasExtractor(SourceExtractor):
     def __init__(
-        self, path, task, subset=None, use_original_config=False, keep_original_category_ids=False
+        self, path, task, subset=None, use_original_config=False, keep_original_category_ids=False, save_hash=False
     ):
         assert osp.isdir(path), path
         self._path = path
@@ -61,6 +61,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
         self._annotations_dir = osp.join(path, annotations_dirs[0])
         self._images_dir = osp.join(path, MapillaryVistasPath.IMAGES_DIR)
         self._task = task
+        self._save_hash = save_hash
 
         if self._task == MapillaryVistasTask.instances:
             if has_meta_file(path):
@@ -158,7 +159,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
                 )
 
             items[item_id] = DatasetItem(
-                id=item_id, subset=self._subset, annotations=annotations, media=image
+                id=item_id, subset=self._subset, annotations=annotations, media=image, save_hash=self._save_hash
             )
 
         self._load_polygons(items)
@@ -193,7 +194,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
                     Mask(image=self._lazy_extract_mask(mask, uval), label=label_id, id=instance_id)
                 )
 
-            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations)
+            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations, save_hash=self._save_hash)
 
         class_dir = osp.join(self._annotations_dir, MapillaryVistasPath.CLASS_DIR)
         for class_path in find_images(class_dir, recursive=True):
@@ -212,7 +213,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
                     Mask(label=label_id, image=self._lazy_extract_mask(class_mask, label_id))
                 )
 
-            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations)
+            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations, save_hash=self._save_hash)
 
         for image_path in find_images(self._images_dir, recursive=True):
             item_id = osp.splitext(osp.relpath(image_path, self._images_dir))[0]
@@ -220,7 +221,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
             if item_id in items:
                 items[item_id].media = image
             else:
-                items[item_id] = DatasetItem(id=item_id, subset=self._subset, media=image)
+                items[item_id] = DatasetItem(id=item_id, subset=self._subset, media=image, save_hash=self._save_hash)
 
         self._load_polygons(items)
         return items.values()

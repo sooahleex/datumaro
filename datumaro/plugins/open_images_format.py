@@ -167,7 +167,7 @@ class OpenImagesPath:
 
 
 class OpenImagesExtractor(Extractor):
-    def __init__(self, path, image_meta=None):
+    def __init__(self, path, image_meta=None, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
 
@@ -182,6 +182,8 @@ class OpenImagesExtractor(Extractor):
 
         self._categories = {}
         self._items = []
+
+        self._save_hash = save_hash
 
         assert image_meta is None or isinstance(image_meta, (dict, str))
         if isinstance(image_meta, dict):
@@ -350,7 +352,7 @@ class OpenImagesExtractor(Extractor):
         else:
             image = Image(path=image_path, size=self._image_meta.get(item_id))
 
-        item = DatasetItem(id=item_id, media=image, subset=subset)
+        item = DatasetItem(id=item_id, media=image, subset=subset, save_hash=self._save_hash)
         self._items.append(item)
         return item
 

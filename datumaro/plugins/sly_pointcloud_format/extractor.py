@@ -18,7 +18,7 @@ class SuperviselyPointCloudExtractor(SourceExtractor):
     NAME = "sly_pointcloud"
     _SUPPORTED_SHAPES = "cuboid"
 
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Expected a path to 'meta.json', " "got '%s'" % path)
 
@@ -26,6 +26,8 @@ class SuperviselyPointCloudExtractor(SourceExtractor):
         self._rootdir = rootdir
 
         super().__init__(subset=subset, media_type=PointCloud)
+
+        self._save_hash = save_hash
 
         items, categories = self._parse(rootdir)
         self._items = list(self._load_items(items).values())
@@ -168,6 +170,7 @@ class SuperviselyPointCloudExtractor(SourceExtractor):
                 media=PointCloud(pcd_path, extra_images=related_images),
                 annotations=frame_desc.get("annotations"),
                 attributes={"frame": int(frame_id), **frame_desc["attributes"]},
+                save_hash=self._save_hash
             )
 
         return parsed

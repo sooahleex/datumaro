@@ -33,15 +33,15 @@ class Searcher:
 
         Parameters
         ----------
-        dataset: Datumaro dataset to search similar dataitem.
-        topK:
+        dataset: 
+            Datumaro dataset to search similar dataitem.
+        topk: 
+            Number of images
         """
         self._dataset = dataset
         self._topk = topk
 
     def unpack_hash_key(self, hash_key: List):
-        """
-        """
         hash_key_list = [hash_key[i:i+2] for i in range(0, len(hash_key), 2)]
         hash_key = np.array([int(s, 16) for s in hash_key_list], dtype='uint8')
         hash_key = np.unpackbits(hash_key, axis=-1)

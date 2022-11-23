@@ -65,7 +65,7 @@ class MotPath:
 
 
 class MotSeqExtractor(SourceExtractor):
-    def __init__(self, path, labels=None, occlusion_threshold=0, is_gt=None, subset=None):
+    def __init__(self, path, labels=None, occlusion_threshold=0, is_gt=None, subset=None, save_hash=False):
         super().__init__(subset=subset)
 
         assert osp.isfile(path)
@@ -73,6 +73,8 @@ class MotSeqExtractor(SourceExtractor):
         self._image_dir = ""
         if osp.isdir(osp.join(seq_root, MotPath.IMAGE_DIR)):
             self._image_dir = osp.join(seq_root, MotPath.IMAGE_DIR)
+
+        self._save_hash = save_hash
 
         seq_info = osp.join(seq_root, MotPath.SEQINFO_FILE)
         if osp.isfile(seq_info):
@@ -139,11 +141,12 @@ class MotSeqExtractor(SourceExtractor):
                         ),
                         size=(self._seq_info["imheight"], self._seq_info["imwidth"]),
                     ),
+                    save_hash=self._save_hash,
                 )
         elif osp.isdir(self._image_dir):
             for p in find_images(self._image_dir):
                 frame_id = int(osp.splitext(osp.relpath(p, self._image_dir))[0])
-                items[frame_id] = DatasetItem(id=frame_id, subset=self._subset, media=Image(path=p))
+                items[frame_id] = DatasetItem(id=frame_id, subset=self._subset, media=Image(path=p), save_hash=self._save_hash)
 
         with open(path, newline="", encoding="utf-8") as csv_file:
             # NOTE: Different MOT files have different count of fields
@@ -154,7 +157,7 @@ class MotSeqExtractor(SourceExtractor):
                 frame_id = int(row["frame_id"])
                 item = items.get(frame_id)
                 if item is None:
-                    item = DatasetItem(id=frame_id, subset=self._subset)
+                    item = DatasetItem(id=frame_id, subset=self._subset, save_hash=self._save_hash)
                 annotations = item.annotations
 
                 x, y = float(row["x"]), float(row["y"])

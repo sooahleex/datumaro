@@ -195,7 +195,7 @@ class _CocoExtractor(SourceExtractor):
                     media=Image(path=osp.join(self._images_dir, file_name), size=image_size),
                     annotations=[],
                     attributes={"id": img_id},
-                    save_hash=self._save_hash
+                    save_hash=self._save_hash,
                 )
             except Exception as e:
                 self._ctx.error_policy.report_item_error(e, item_id=(img_id, self._subset))

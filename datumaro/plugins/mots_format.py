@@ -44,7 +44,7 @@ class MotsPngExtractor(SourceExtractor):
             return [{"url": path, "format": MotsPngExtractor.NAME}]
         return []
 
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         assert osp.isdir(path), path
         super().__init__(subset=subset)
         self._images_dir = osp.join(path, "images")
@@ -58,6 +58,7 @@ class MotsPngExtractor(SourceExtractor):
                 osp.join(self._anno_dir, MotsPath.LABELS_FILE)
             )
         self._items = self._parse_items()
+        self._save_hash = save_hash
 
     def _parse_categories(self, path):
         if osp.isfile(path):
@@ -94,6 +95,7 @@ class MotsPngExtractor(SourceExtractor):
                     subset=self._subset,
                     media=image,
                     annotations=self._parse_annotations(p),
+                    save_hash=self._save_hash
                 )
             )
         return items

@@ -23,9 +23,10 @@ class KittiRawExtractor(SourceExtractor):
     # https://s3.eu-central-1.amazonaws.com/avg-kitti/devkit_raw_data.zip
     # Check cpp header implementation for field meaning
 
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         assert osp.isfile(path), path
         self._rootdir = osp.dirname(path)
+        self._save_hash = save_hash
 
         super().__init__(subset=subset, media_type=PointCloud)
 
@@ -246,6 +247,7 @@ class KittiRawExtractor(SourceExtractor):
                 ),
                 annotations=item_desc.get("annotations"),
                 attributes={"frame": int(frame_id)},
+                save_hash=self._save_hash,
             )
 
         for frame_id, name in name_mapping.items():
@@ -260,6 +262,7 @@ class KittiRawExtractor(SourceExtractor):
                     extra_images=[Image(path=image) for image in sorted(images.get(name, []))],
                 ),
                 attributes={"frame": int(frame_id)},
+                save_hash=self._save_hash,
             )
 
         return items

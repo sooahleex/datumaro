@@ -31,12 +31,12 @@ class CelebaPath:
 
 
 class CelebaExtractor(SourceExtractor):
-    def __init__(self, path):
+    def __init__(self, path, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
 
         super().__init__()
-
+        self._save_hash = save_hash
         self._categories = {AnnotationType.label: LabelCategories()}
         if has_meta_file(path):
             self._categories = {
@@ -78,7 +78,7 @@ class CelebaExtractor(SourceExtractor):
                 if image:
                     image = Image(path=image)
 
-                items[item_id] = DatasetItem(id=item_id, media=image, annotations=anno)
+                items[item_id] = DatasetItem(id=item_id, media=image, annotations=anno, save_hash=self._save_hash)
 
         landmark_path = osp.join(root_dir, CelebaPath.LANDMARKS_FILE)
         if osp.isfile(landmark_path):
@@ -178,7 +178,7 @@ class CelebaExtractor(SourceExtractor):
                         if image:
                             image = Image(path=image)
 
-                        items[item_id] = DatasetItem(id=item_id, media=image)
+                        items[item_id] = DatasetItem(id=item_id, media=image, save_hash=self._save_hash)
 
                     items[item_id].attributes = attrs
 
@@ -202,7 +202,7 @@ class CelebaExtractor(SourceExtractor):
                         if image:
                             image = Image(path=image)
 
-                        items[item_id] = DatasetItem(id=item_id, media=image)
+                        items[item_id] = DatasetItem(id=item_id, media=image, save_hash=self._save_hash)
 
                     items[item_id].subset = subset
 
