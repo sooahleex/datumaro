@@ -194,7 +194,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
                     Mask(image=self._lazy_extract_mask(mask, uval), label=label_id, id=instance_id)
                 )
 
-            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations, save_hash=self._save_hash)
+            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations)
 
         class_dir = osp.join(self._annotations_dir, MapillaryVistasPath.CLASS_DIR)
         for class_path in find_images(class_dir, recursive=True):
@@ -213,7 +213,7 @@ class _MapillaryVistasExtractor(SourceExtractor):
                     Mask(label=label_id, image=self._lazy_extract_mask(class_mask, label_id))
                 )
 
-            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations, save_hash=self._save_hash)
+            items[item_id] = DatasetItem(id=item_id, subset=self._subset, annotations=annotations)
 
         for image_path in find_images(self._images_dir, recursive=True):
             item_id = osp.splitext(osp.relpath(image_path, self._images_dir))[0]

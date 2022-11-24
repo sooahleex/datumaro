@@ -117,7 +117,7 @@ class DatasetItem:
             assert isinstance(point_cloud, PointCloud)
             media = point_cloud
 
-        if save_hash:
+        if save_hash and bool(media):
             hash_key = inference(media)
 
         self.__attrs_init__(

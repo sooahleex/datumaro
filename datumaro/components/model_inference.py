@@ -23,7 +23,7 @@ from torchvision import transforms
 import torch.nn.functional as F
 from torch.autograd import Function
 
-from datumaro.components.media import MultiframeImage, Video
+from datumaro.components.media import MultiframeImage, Video, PointCloud
 
 if packaging.version.parse(torch.__version__) < packaging.version.parse("1.7.1"):
     warnings.warn("PyTorch version 1.7.1 or higher is recommended")
@@ -612,6 +612,7 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
 
 def inference(item):
     assert not isinstance(item, Video), f"Media type should be Image, Current type={type(item)}"
+    assert not isinstance(item, PointCloud), f"Media type should be Image, Current type={type(item)}"
     if isinstance(item.data, type(None)):
         return []
 
