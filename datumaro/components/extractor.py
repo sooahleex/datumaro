@@ -185,6 +185,8 @@ class DatasetItem:
         )
         return isinstance(self.media, PointCloud)
 
+
+DatasetInfo = Dict[str, Any]
 CategoriesInfo = Dict[AnnotationType, Categories]
 
 
