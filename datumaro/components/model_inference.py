@@ -610,13 +610,9 @@ def load_model(download_root: str = None, model_name: str = "ViT-B/32", jit: boo
 
     return model_
 
-def inference(item):
-    assert not isinstance(item, Video), f"Media type should be Image, Current type={type(item)}"
-    assert not isinstance(item, PointCloud), f"Media type should be Image, Current type={type(item)}"
-    if isinstance(item.data, type(None)):
-        return []
-
-    model = load_model()
+def _image_features(model, image):
+    if len(image.shape) == 3:
+        image = np.squeeze(image, axis=0)
 
     trans = transforms.Compose(
         [
@@ -626,42 +622,20 @@ def inference(item):
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.228, 0.224, 0.225]),
         ]
     )
+    img = np.uint8(image)
+    img = Image.fromarray(img)
 
-    if isinstance(item, str):
-        text = tokenize(f"a photo of a {item}").to(device)
-        features = model.encode_text(text)
-    elif isinstance(item, MultiframeImage):
-        for frame in item.data:
-            img = np.uint8(frame.data)
-            img = Image.fromarray(img)
+    if np.array(img).ndim == 2:
+        img = img.convert('RGB')
+    img = trans(img)
+    img = np.expand_dims(img, axis=0)
+    img = torch.Tensor(img)
+    img = img.to(device, dtype=torch.float)
 
-            if np.array(img).ndim == 2:
-                img = img.convert('RGB')
-            img = trans(img)
-            img = np.expand_dims(img, axis=0)
-            img = torch.Tensor(img)
-            img = img.to(device, dtype=torch.float)
+    features = model.encode_image(img)
+    return features
 
-            features = model.encode_image(img)
-
-            features = features.cpu()
-            hash_key = features.detach().numpy() >= 0
-            hash_key = hash_key*1
-            hash_string = np.packbits(hash_key, axis=-1)
-            hash_string = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_string))
-    else:
-        img = np.uint8(item.data)
-        img = Image.fromarray(img)
-
-        if np.array(img).ndim == 2:
-            img = img.convert('RGB')
-        img = trans(img)
-        img = np.expand_dims(img, axis=0)
-        img = torch.Tensor(img)
-        img = img.to(device, dtype=torch.float)
-
-        features = model.encode_image(img)
-
+def _compute_hash(features):
     features = encode_discrete(features)
     features = F.normalize(features, dim=-1)
 
@@ -670,7 +644,30 @@ def inference(item):
     hash_key = hash_key*1
     hash_string = np.packbits(hash_key, axis=-1)
     hash_string = list(map(lambda row: ''.join(['{:02x}'.format(r) for r in row]), hash_string))
+    return hash_string
 
+def inference(item):
+    assert not isinstance(item, Video), f"Media type should be Image, Current type={type(item)}"
+    assert not isinstance(item, PointCloud), f"Media type should be Image, Current type={type(item)}"
+    if isinstance(item.data, type(None)):
+        return []
+
+    model = load_model()
+
+    if isinstance(item, str):
+        text = tokenize(f"a photo of a {item}").to(device)
+        features = model.encode_text(text)
+    elif isinstance(item, MultiframeImage):
+        multi_hash_string = []
+        for frame in item.data:
+            features = _image_features(model, frame.data)
+            hash_string = _compute_hash(features)
+            multi_hash_string.append(hash_string)
+        return multi_hash_string
+    else:
+        features = _image_features(model, item.data)
+
+    hash_string = _compute_hash(features)
     return hash_string
 
 def tokenize(texts: Union[str, List[str]], context_length: int = 77, truncate: bool = False) -> Union[torch.IntTensor, torch.LongTensor]:

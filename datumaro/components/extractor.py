@@ -185,12 +185,6 @@ class DatasetItem:
         )
         return isinstance(self.media, PointCloud)
 
-    @property
-    def set_hash_key(self):
-        hash_key = inference(self.media)
-        return hash_key
-
-DatasetInfo = Dict[str, Any]
 CategoriesInfo = Dict[AnnotationType, Categories]
 
 
