@@ -17,11 +17,12 @@ class VottCsvPath:
 
 
 class VottCsvExtractor(SourceExtractor):
-    def __init__(self, path):
+    def __init__(self, path, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Can't read annotation file '%s'" % path)
 
         super().__init__(subset=osp.splitext(osp.basename(path))[0].rsplit("-", maxsplit=1)[0])
+        self._save_hash = save_hash
 
         if has_meta_file(path):
             self._categories = {
@@ -46,6 +47,7 @@ class VottCsvExtractor(SourceExtractor):
                         id=item_id,
                         subset=self._subset,
                         media=Image(path=osp.join(osp.dirname(path), row["image"])),
+                        save_hash=self._save_hash,
                     )
 
                 annotations = items[item_id].annotations

@@ -13,16 +13,18 @@ from datumaro.components.extractor import DatasetItem, Importer, SourceExtractor
 from datumaro.components.media import Image
 from datumaro.util.image import find_images
 
+from tqdm import tqdm
 
 class ImagenetPath:
     IMAGE_DIR_NO_LABEL = "no_label"
 
 
 class ImagenetExtractor(SourceExtractor):
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         assert osp.isdir(path), path
         super().__init__(subset=subset)
 
+        self._save_hash = save_hash
         self._categories = self._load_categories(path)
         self._items = list(self._load_items(path).values())
 
@@ -36,14 +38,14 @@ class ImagenetExtractor(SourceExtractor):
     def _load_items(self, path):
         items = {}
 
-        for image_path in find_images(path, recursive=True, max_depth=1):
+        for image_path in tqdm(find_images(path, recursive=True, max_depth=1)):
             label = osp.basename(osp.dirname(image_path))
             image_name = osp.splitext(osp.basename(image_path))[0]
 
             item_id = osp.join(label, image_name)
             item = items.get(item_id)
             if item is None:
-                item = DatasetItem(id=item_id, subset=self._subset, media=Image(path=image_path))
+                item = DatasetItem(id=item_id, subset=self._subset, media=Image(path=image_path), save_hash=self._save_hash)
                 items[item_id] = item
             annotations = item.annotations
 

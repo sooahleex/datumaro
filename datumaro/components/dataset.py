@@ -179,6 +179,9 @@ class DatasetItemStorageDatasetView(IDataset):
         def media_type(self):
             return self.parent.media_type()
 
+        def hash_key(self):
+            return self.parent.hash_key()
+
     def __init__(
         self,
         parent: DatasetItemStorage,
@@ -963,6 +966,9 @@ class Dataset(IDataset):
     def media_type(self) -> Type[MediaElement]:
         return self._data.media_type()
 
+    def hash_key(self):
+        return self._data.hash_key()
+
     def get(self, id: str, subset: Optional[str] = None) -> Optional[DatasetItem]:
         return self._data.get(id, subset)
 
@@ -1296,6 +1302,7 @@ class Dataset(IDataset):
         env: Optional[Environment] = None,
         progress_reporter: Optional[ProgressReporter] = None,
         error_policy: Optional[ImportErrorPolicy] = None,
+        save_hash: Optional[bool] = False,
         **kwargs,
     ) -> Dataset:
         """
@@ -1313,6 +1320,7 @@ class Dataset(IDataset):
                 Implies earger loading.
             error_policy - An object to report format-related errors.
                 Implies earger loading.
+            save_hash - 
             **kwargs - Parameters for the format
         """
 
@@ -1356,6 +1364,9 @@ class Dataset(IDataset):
                     progress_reporter=pbar, error_policy=error_policy
                 )
 
+                if save_hash:
+                    extractor_kwargs['save_hash'] = save_hash
+
                 try:
                     extractors.append(
                         env.make_extractor(src_conf.format, src_conf.url, **extractor_kwargs)
@@ -1380,12 +1391,14 @@ class Dataset(IDataset):
 
             dataset = cls.from_extractors(*extractors, env=env)
             if eager:
-                dataset.init_cache()
+                dataset.init_cache()    
         except _ImportFail as e:
             raise e.__cause__
 
         dataset._source_path = path
         dataset._format = format
+
+
 
         return dataset
 

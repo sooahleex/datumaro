@@ -28,8 +28,10 @@ from .format import DatumaroPath
 
 
 class DatumaroExtractor(SourceExtractor):
-    def __init__(self, path):
+    def __init__(self, path, save_hash=False):
         assert osp.isfile(path), path
+        
+        self._save_hash = save_hash
 
         rootpath = ""
         if path.endswith(osp.join(DatumaroPath.ANNOTATIONS_DIR, osp.basename(path))):
@@ -109,7 +111,8 @@ class DatumaroExtractor(SourceExtractor):
             media = None
             image_info = item_desc.get("image")
             if image_info:
-                image_filename = image_info.get("path") or item_id + DatumaroPath.IMAGE_EXT
+                # image_filename = image_info.get("path") or item_id + DatumaroPath.IMAGE_EXT
+                image_filename = item_id + DatumaroPath.IMAGE_EXT
                 image_path = osp.join(self._images_dir, self._subset, image_filename)
                 if not osp.isfile(image_path):
                     # backward compatibility
@@ -156,6 +159,7 @@ class DatumaroExtractor(SourceExtractor):
                 annotations=annotations,
                 media=media,
                 attributes=item_desc.get("attr"),
+                save_hash=self._save_hash,
             )
 
             items.append(item)

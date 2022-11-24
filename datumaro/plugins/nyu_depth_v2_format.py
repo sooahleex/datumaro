@@ -15,12 +15,13 @@ from datumaro.components.media import Image
 
 
 class NyuDepthV2Extractor(SourceExtractor):
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
 
         super().__init__(subset=subset)
 
+        self._save_hash = save_hash
         self._items = list(self._load_items(path).values())
 
     def _load_items(self, path):
@@ -37,6 +38,7 @@ class NyuDepthV2Extractor(SourceExtractor):
                 id=item_id,
                 media=Image(data=image),
                 annotations=[DepthAnnotation(image=Image(data=depth))],
+                save_hash=self._save_hash,
             )
 
         return items

@@ -18,12 +18,13 @@ class CommonSuperResolutionPath:
 
 
 class CommonSuperResolutionExtractor(SourceExtractor):
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
 
         super().__init__(subset=subset)
 
+        self._save_hash = save_hash
         self._items = list(self._load_items(path).values())
 
     def _load_items(self, path):
@@ -48,7 +49,7 @@ class CommonSuperResolutionExtractor(SourceExtractor):
                 attributes["upsampled"] = Image(path=upsampled_image)
 
             items[item_id] = DatasetItem(
-                id=item_id, subset=self._subset, media=Image(path=lr_image), attributes=attributes
+                id=item_id, subset=self._subset, media=Image(path=lr_image), attributes=attributes, save_hash=self._save_hash
             )
 
         hr_image_dir = osp.join(path, CommonSuperResolutionPath.HR_IMAGES_DIR)
@@ -60,7 +61,7 @@ class CommonSuperResolutionExtractor(SourceExtractor):
                 if upsampled_image:
                     attributes["upsampled"] = Image(path=upsampled_image)
 
-                items[item_id] = DatasetItem(id=item_id, subset=self._subset, attributes=attributes)
+                items[item_id] = DatasetItem(id=item_id, subset=self._subset, attributes=attributes, save_hash=self._save_hash)
 
             items[item_id].annotations = [SuperResolutionAnnotation(Image(path=hr_image))]
 
