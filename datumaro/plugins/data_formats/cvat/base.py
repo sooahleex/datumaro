@@ -27,7 +27,7 @@ from .format import CvatPath
 class CvatBase(SubsetBase):
     _SUPPORTED_SHAPES = ("box", "polygon", "polyline", "points")
 
-    def __init__(self, path, subset=None):
+    def __init__(self, path, subset=None, save_hash=False):
         assert osp.isfile(path), path
         rootpath = osp.dirname(path)
         images_dir = ""
@@ -35,6 +35,7 @@ class CvatBase(SubsetBase):
             images_dir = osp.join(rootpath, CvatPath.IMAGES_DIR)
         self._images_dir = images_dir
         self._path = path
+        self._save_hash = save_hash
 
         if not subset:
             subset = osp.splitext(osp.basename(path))[0]
@@ -379,6 +380,7 @@ class CvatBase(SubsetBase):
                 media=image,
                 annotations=item_desc.get("annotations"),
                 attributes={"frame": int(frame_id)},
+                save_hash=self._save_hash,
             )
         return parsed
 
