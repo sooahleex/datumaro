@@ -19,7 +19,6 @@ from datumaro.util import cast
 from datumaro.util.meta_file_util import has_meta_file, parse_meta_file
 from datumaro.util.pickle_util import PickleLoader
 
-from tqdm import tqdm
 
 class CifarPath:
     META_10_FILE = "batches.meta"
@@ -125,7 +124,7 @@ class CifarExtractor(SourceExtractor):
         if 0 < len(images_data) and len(images_data) != len(filenames):
             raise Exception("The sizes of the arrays 'data', " "'filenames', 'labels' don't match.")
 
-        for i, (filename, label) in tqdm(enumerate(zip(filenames, labels))):
+        for i, (filename, label) in enumerate(zip(filenames, labels)):
             item_id = osp.splitext(filename)[0]
             annotations = []
             if label is not None:
@@ -153,7 +152,11 @@ class CifarExtractor(SourceExtractor):
                 image = Image(data=image)
 
             items[item_id] = DatasetItem(
-                id=item_id, subset=self._subset, media=image, annotations=annotations, save_hash=self._save_hash
+                id=item_id,
+                subset=self._subset,
+                media=image,
+                annotations=annotations,
+                save_hash=self._save_hash,
             )
 
         return items
