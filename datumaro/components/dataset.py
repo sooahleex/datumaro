@@ -1320,7 +1320,7 @@ class Dataset(IDataset):
                 Implies earger loading.
             error_policy - An object to report format-related errors.
                 Implies earger loading.
-            save_hash - 
+            save_hash - Indicates if saving hash for each DatasetItem.
             **kwargs - Parameters for the format
         """
 
@@ -1365,7 +1365,7 @@ class Dataset(IDataset):
                 )
 
                 if save_hash:
-                    extractor_kwargs['save_hash'] = save_hash
+                    extractor_kwargs["save_hash"] = save_hash
 
                 try:
                     extractors.append(

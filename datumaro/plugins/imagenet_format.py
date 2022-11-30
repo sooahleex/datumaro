@@ -45,7 +45,12 @@ class ImagenetExtractor(SourceExtractor):
             item_id = osp.join(label, image_name)
             item = items.get(item_id)
             if item is None:
-                item = DatasetItem(id=item_id, subset=self._subset, media=Image(path=image_path), save_hash=self._save_hash)
+                item = DatasetItem(
+                    id=item_id,
+                    subset=self._subset,
+                    media=Image(path=image_path),
+                    save_hash=self._save_hash,
+                )
                 items[item_id] = item
             annotations = item.annotations
 

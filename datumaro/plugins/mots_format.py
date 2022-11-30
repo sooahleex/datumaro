@@ -47,6 +47,7 @@ class MotsPngExtractor(SourceExtractor):
     def __init__(self, path, subset=None, save_hash=False):
         assert osp.isdir(path), path
         super().__init__(subset=subset)
+        self._save_hash = save_hash
         self._images_dir = osp.join(path, "images")
         self._anno_dir = osp.join(path, MotsPath.MASKS_DIR)
         if has_meta_file(path):
@@ -95,7 +96,7 @@ class MotsPngExtractor(SourceExtractor):
                     subset=self._subset,
                     media=image,
                     annotations=self._parse_annotations(p),
-                    save_hash=self._save_hash
+                    save_hash=self._save_hash,
                 )
             )
         return items
