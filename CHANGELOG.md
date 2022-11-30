@@ -39,8 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (<https://github.com/openvinotoolkit/datumaro/pull/758>)
 - Add an interface to manipulate 'infos' to store the dataset meta-info
   (<https://github.com/openvinotoolkit/datumaro/pull/767>)
+- Fix a VOC dataset export when a label contains 'space'
+  (<https://github.com/openvinotoolkit/datumaro/pull/771>)
 
 ### Changed
+- Wrap title text according to its plot width
+  (<https://github.com/openvinotoolkit/datumaro/pull/769>)
 - Get list of subsets and support only Image media type in visualizer
   (<https://github.com/openvinotoolkit/datumaro/pull/768>)
 
