@@ -2,7 +2,7 @@ import os.path as osp
 from unittest import TestCase
 
 from datumaro.components.media import Video
-from datumaro.util.test_utils import compare_datasets
+from datumaro.util.test_utils import compare_datasets, get_hash_key
 
 DUMMY_DATASET_DIR = osp.join(osp.dirname(__file__), "assets", "kinetics_dataset")
 
@@ -58,4 +58,4 @@ class KineticsImporterTest(TestCase):
     @mark_requirement(Requirements.DATUM_ERROR_REPORTING)
     def test_save_hash(self):
         with self.assertRaises(Exception):
-            Dataset.import_from(DUMMY_DATASET_DIR, "brats", save_hash=True)
+            Dataset.import_from(DUMMY_DATASET_DIR, "kinetics", save_hash=True)

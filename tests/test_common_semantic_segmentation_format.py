@@ -13,7 +13,7 @@ from datumaro.plugins.data_formats.common_semantic_segmentation import (
     CommonSemanticSegmentationImporter,
     make_categories,
 )
-from datumaro.util.test_utils import compare_datasets
+from datumaro.util.test_utils import compare_datasets, get_hash_key
 
 from .requirements import Requirements, mark_requirement
 
@@ -132,7 +132,7 @@ class CommonSemanticSegmentationImporterTest(TestCase):
             DUMMY_DATASET_DIR, "common_semantic_segmentation", save_hash=True
         )
         for item in imported_dataset:
-            self.assertTrue(bool(item.hash_key))
+            self.assertTrue(bool(get_hash_key(item)))
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_non_standard_structure(self):
@@ -144,4 +144,4 @@ class CommonSemanticSegmentationImporterTest(TestCase):
             save_hash=True,
         )
         for item in imported_dataset:
-            self.assertTrue(bool(item.hash_key))
+            self.assertTrue(bool(get_hash_key(item)))
