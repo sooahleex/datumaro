@@ -100,7 +100,17 @@ class MnistCsvBase(SubsetBase):
             if 0 < len(meta) and len(meta[i]) in [1, 3]:
                 i = meta[i][0]
 
+<<<<<<< HEAD
             items[i] = DatasetItem(id=i, subset=self._subset, media=image, annotations=item_anno, save_hash=self._save_hash)
+=======
+            items[i] = DatasetItem(
+                id=i,
+                subset=self._subset,
+                media=image,
+                annotations=item_anno,
+                save_hash=self._save_hash,
+            )
+>>>>>>> data_searcher
         return items
 
 

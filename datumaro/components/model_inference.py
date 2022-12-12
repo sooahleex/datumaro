@@ -18,7 +18,6 @@ import torch.nn.functional as F
 from PIL import Image
 from pkg_resources import packaging
 from torch import nn
-from torch.autograd import Function
 from torchvision import transforms
 
 from datumaro.components.media import MultiframeImage, PointCloud, Video
@@ -398,27 +397,9 @@ class SimpleTokenizer(object):
         return text
 
 
-class hash(Function):
-    @staticmethod
-    def forward(ctx, input):
-        # ctx.save_for_backward(input)
-        return torch.sign(input)
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        # input,  = ctx.saved_tensors
-        # grad_output = grad_output.data
-
-        return grad_output
-
-
-def hash_layer(input):
-    return hash.apply(input)
-
-
 def encode_discrete(x):
     prob = torch.sigmoid(x)
-    z = hash_layer(prob - 0.5)
+    z = torch.sign(prob - 0.5)
     return z
 
 

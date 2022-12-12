@@ -11,7 +11,7 @@ import attr
 import numpy as np
 from attr import attrs, field
 
-from datumaro.components.annotation import Annotation, AnnotationType, Categories
+from datumaro.components.annotation import Annotation, AnnotationType, Categories, HashKey
 from datumaro.components.cli_plugin import CliPlugin
 from datumaro.components.importer import ImportContext, NullImportContext
 from datumaro.components.media import Image, MediaElement, PointCloud
@@ -94,6 +94,9 @@ class DatasetItem:
 
         if save_hash and bool(media):
             hash_key = hash_inference(media)
+            if not annotations:
+                annotations = []
+            annotations.append(HashKey(hash_key))
 
         self.__attrs_init__(
             id=id,
@@ -101,7 +104,6 @@ class DatasetItem:
             media=media,
             annotations=annotations,
             attributes=attributes,
-            hash_key=hash_key,
         )
 
     # Deprecated. Provided for backward compatibility.
@@ -167,8 +169,9 @@ class DatasetItem:
 
     @property
     def set_hash_key(self):
-        self.hash_key = hash_inference(self.media)
-        return self.hash_key
+        hash_key = hash_inference(self.media_as(Image))
+        self.annotations.append(HashKey(hash_key))
+        return hash_key
 
 
 DatasetInfo = Dict[str, Any]

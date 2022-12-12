@@ -33,7 +33,10 @@ class MpiiJsonPath:
 class MpiiJsonExtractor(SourceExtractor):
 =======
 class MpiiJsonBase(SubsetBase):
+<<<<<<< HEAD
 >>>>>>> data_searcher:datumaro/plugins/data_formats/mpii/mpii_json.py
+=======
+>>>>>>> data_searcher
     def __init__(self, path, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Can't read annotation file '%s'" % path)

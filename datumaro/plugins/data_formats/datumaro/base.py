@@ -34,6 +34,8 @@ class DatumaroBase(SubsetBase):
         
         self._save_hash = save_hash
 
+        self._save_hash = save_hash
+
         rootpath = ""
         if path.endswith(osp.join(DatumaroPath.ANNOTATIONS_DIR, osp.basename(path))):
             rootpath = path.rsplit(DatumaroPath.ANNOTATIONS_DIR, maxsplit=1)[0]

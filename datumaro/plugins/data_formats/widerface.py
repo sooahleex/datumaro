@@ -28,11 +28,7 @@ class WiderFacePath:
     DEFAULT_LABEL = "face"
 
 
-<<<<<<< HEAD:datumaro/plugins/widerface_format.py
-class WiderFaceExtractor(SourceExtractor):
-=======
 class WiderFaceBase(SubsetBase):
->>>>>>> data_searcher:datumaro/plugins/data_formats/widerface.py
     def __init__(self, path, subset=None, save_hash=False):
         if not osp.isfile(path):
             raise Exception("Can't read annotation file '%s'" % path)
@@ -120,7 +116,7 @@ class WiderFaceBase(SubsetBase):
                 subset=self._subset,
                 media=Image(path=image_path),
                 annotations=annotations,
-                save_hash=self._save_hash
+                save_hash=self._save_hash,
             )
 
             try:

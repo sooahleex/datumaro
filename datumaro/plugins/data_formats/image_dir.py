@@ -42,7 +42,15 @@ class ImageDirBase(SubsetBase):
 
         for path in find_images(url, recursive=True):
             item_id = osp.relpath(osp.splitext(path)[0], url)
+<<<<<<< HEAD
             self._items.append(DatasetItem(id=item_id, subset=self._subset, media=Image(path=path), save_hash=save_hash))
+=======
+            self._items.append(
+                DatasetItem(
+                    id=item_id, subset=self._subset, media=Image(path=path), save_hash=save_hash
+                )
+            )
+>>>>>>> data_searcher
 
 
 class ImageDirExporter(Exporter):

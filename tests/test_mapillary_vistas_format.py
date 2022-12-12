@@ -17,7 +17,7 @@ from datumaro.plugins.data_formats.mapillary_vistas.format import (
     MapillaryVistasLabelMaps,
     make_mapillary_instance_categories,
 )
-from datumaro.util.test_utils import TestDir, compare_datasets
+from datumaro.util.test_utils import TestDir, compare_datasets, get_hash_key
 
 from .requirements import Requirements, mark_requirement
 
@@ -547,7 +547,11 @@ class MapillaryVistasImporterTest(TestCase):
             DUMMY_DATASET_V1_2, "mapillary_vistas", save_hash=True
         )
         for item in imported_dataset:
+<<<<<<< HEAD
             self.assertTrue(bool(item.hash_key))
+=======
+            self.assertTrue(bool(get_hash_key(item)))
+>>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_v2_0_instances(self):
@@ -555,7 +559,11 @@ class MapillaryVistasImporterTest(TestCase):
             DUMMY_DATASET_V2_0, "mapillary_vistas_instances", save_hash=True
         )
         for item in imported_dataset:
+<<<<<<< HEAD
             self.assertTrue(bool(item.hash_key))
+=======
+            self.assertTrue(bool(get_hash_key(item)))
+>>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_v2_0_panoptic(self):
@@ -563,7 +571,11 @@ class MapillaryVistasImporterTest(TestCase):
             DUMMY_DATASET_V2_0, "mapillary_vistas_panoptic", save_hash=True
         )
         for item in imported_dataset:
+<<<<<<< HEAD
             self.assertTrue(bool(item.hash_key))
+=======
+            self.assertTrue(bool(get_hash_key(item)))
+>>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_with_meta_file(self):
@@ -571,4 +583,8 @@ class MapillaryVistasImporterTest(TestCase):
             DUMMY_DATASET_WITH_META_FILE, "mapillary_vistas", save_hash=True
         )
         for item in imported_dataset:
+<<<<<<< HEAD
             self.assertTrue(bool(item.hash_key))
+=======
+            self.assertTrue(bool(get_hash_key(item)))
+>>>>>>> data_searcher

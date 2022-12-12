@@ -26,11 +26,7 @@ class MnistPath:
     NONE_LABEL = 255
 
 
-<<<<<<< HEAD:datumaro/plugins/mnist_format.py
-class MnistExtractor(SourceExtractor):
-=======
 class MnistBase(SubsetBase):
->>>>>>> data_searcher:datumaro/plugins/data_formats/mnist.py
     def __init__(self, path, subset=None, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Can't read annotation file '%s'" % path)
@@ -120,7 +116,13 @@ class MnistBase(SubsetBase):
             if 0 < len(meta) and (len(meta[i]) == 1 or len(meta[i]) == 3):
                 i = meta[i][0]
 
-            items[i] = DatasetItem(id=i, subset=self._subset, media=image, annotations=annotations, save_hash=self._save_hash)
+            items[i] = DatasetItem(
+                id=i,
+                subset=self._subset,
+                media=image,
+                annotations=annotations,
+                save_hash=self._save_hash,
+            )
         return items
 
 

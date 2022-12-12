@@ -21,6 +21,7 @@ class _KittiBase(SubsetBase):
         assert osp.isdir(path), path
         self._path = path
         self._task = task
+        self._save_hash = save_hash
 
         self._save_hash = save_hash
         if not subset:
@@ -93,7 +94,11 @@ class _KittiBase(SubsetBase):
                     image = Image(path=image)
 
                 items[item_id] = DatasetItem(
-                    id=item_id, annotations=anns, media=image, subset=self._subset, save_hash=self._save_hash
+                    id=item_id,
+                    annotations=anns,
+                    media=image,
+                    subset=self._subset,
+                    save_hash=self._save_hash,
                 )
 
         det_dir = osp.join(self._path, KittiPath.LABELS_DIR)
@@ -140,12 +145,23 @@ class _KittiBase(SubsetBase):
                     image = Image(path=image)
 
                 items[item_id] = DatasetItem(
-                    id=item_id, annotations=anns, media=image, subset=self._subset, save_hash=self._save_hash
+                    id=item_id,
+                    annotations=anns,
+                    media=image,
+                    subset=self._subset,
+                    save_hash=self._save_hash,
                 )
 
         for item_id, image_path in image_path_by_id.items():
             items[item_id] = DatasetItem(
+<<<<<<< HEAD
                 id=item_id, subset=self._subset, media=Image(path=image_path), save_hash=self._save_hash
+=======
+                id=item_id,
+                subset=self._subset,
+                media=Image(path=image_path),
+                save_hash=self._save_hash,
+>>>>>>> data_searcher
             )
 
         return items
@@ -156,10 +172,10 @@ class _KittiBase(SubsetBase):
 
 
 class KittiSegmentationBase(_KittiBase):
-    def __init__(self, path):
-        super().__init__(path, task=KittiTask.segmentation)
+    def __init__(self, path, save_hash=False):
+        super().__init__(path, task=KittiTask.segmentation, save_hash=save_hash)
 
 
 class KittiDetectionBase(_KittiBase):
-    def __init__(self, path):
-        super().__init__(path, task=KittiTask.detection)
+    def __init__(self, path, save_hash=False):
+        super().__init__(path, task=KittiTask.detection, save_hash=save_hash)
