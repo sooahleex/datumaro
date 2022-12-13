@@ -58,8 +58,4 @@ class KineticsImporterTest(TestCase):
     @mark_requirement(Requirements.DATUM_ERROR_REPORTING)
     def test_save_hash(self):
         with self.assertRaises(Exception):
-<<<<<<< HEAD
-            Dataset.import_from(DUMMY_DATASET_DIR, "brats", save_hash=True)
-=======
             Dataset.import_from(DUMMY_DATASET_DIR, "kinetics", save_hash=True)
->>>>>>> data_searcher

@@ -407,8 +407,4 @@ class LfwImporterTest(TestCase):
     def test_save_hash(self):
         imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "lfw", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

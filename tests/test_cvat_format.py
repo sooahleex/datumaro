@@ -657,19 +657,11 @@ class CvatExporterTest(TestCase):
     def test_save_hash_image(self):
         imported_dataset = Dataset.import_from(DUMMY_IMAGE_DATASET_DIR, "cvat", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_video(self):
         imported_dataset = Dataset.import_from(DUMMY_VIDEO_DATASET_DIR, "cvat", save_hash=True)
         for item in imported_dataset:
             if item.media.data is not None:
-<<<<<<< HEAD
-                self.assertTrue(bool(item.hash_key))
-=======
                 self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

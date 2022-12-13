@@ -2638,8 +2638,4 @@ class CocoExporterTest(TestCase):
         for dataset_dir, format in zip(paths, formats):
             imported_dataset = Dataset.import_from(dataset_dir, format, save_hash=True)
             for item in imported_dataset:
-<<<<<<< HEAD
-                self.assertTrue(bool(item.hash_key))
-=======
                 self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

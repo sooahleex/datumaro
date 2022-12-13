@@ -154,14 +154,10 @@ class _KittiBase(SubsetBase):
 
         for item_id, image_path in image_path_by_id.items():
             items[item_id] = DatasetItem(
-<<<<<<< HEAD
-                id=item_id, subset=self._subset, media=Image(path=image_path), save_hash=self._save_hash
-=======
                 id=item_id,
                 subset=self._subset,
                 media=Image(path=image_path),
                 save_hash=self._save_hash,
->>>>>>> data_searcher
             )
 
         return items

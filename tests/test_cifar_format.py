@@ -374,18 +374,10 @@ class CifarImporterTest(TestCase):
     def test_save_hash_10(self):
         imported_dataset = Dataset.import_from(DUMMY_10_DATASET_DIR, "cifar", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_100(self):
         imported_dataset = Dataset.import_from(DUMMY_100_DATASET_DIR, "cifar", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

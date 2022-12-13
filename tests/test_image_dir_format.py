@@ -89,16 +89,8 @@ class ImageDirFormatTest(TestCase):
             ]
         )
         with TestDir() as test_dir:
-<<<<<<< HEAD
-            converter = ImageDirConverter.convert
-            converter(dataset, test_dir)
-            parsed_dataset = Dataset.import_from(test_dir, "image_dir", save_hash=True)
-        for item in parsed_dataset:
-            self.assertTrue(bool(item.hash_key))
-=======
             converter = ImageDirExporter.convert
             converter(dataset, test_dir)
             parsed_dataset = Dataset.import_from(test_dir, "image_dir", save_hash=True)
         for item in parsed_dataset:
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

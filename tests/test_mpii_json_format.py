@@ -441,11 +441,7 @@ class MpiiJsonImporterTest(TestCase):
             DUMMY_DATASET_DIR_WITH_NUMPY_FILES, "mpii_json", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_580)
     def test_save_hash_wo_numpy_files(self):
@@ -453,8 +449,4 @@ class MpiiJsonImporterTest(TestCase):
             DUMMY_DATASET_DIR_WO_NUMPY_FILES, "mpii_json", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

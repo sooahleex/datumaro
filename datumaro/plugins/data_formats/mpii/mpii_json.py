@@ -29,14 +29,7 @@ class MpiiJsonPath:
     POS_GT_FILE = "mpii_pos_gt.npy"
 
 
-<<<<<<< HEAD:datumaro/plugins/mpii_format/mpii_json.py
-class MpiiJsonExtractor(SourceExtractor):
-=======
 class MpiiJsonBase(SubsetBase):
-<<<<<<< HEAD
->>>>>>> data_searcher:datumaro/plugins/data_formats/mpii/mpii_json.py
-=======
->>>>>>> data_searcher
     def __init__(self, path, save_hash=False):
         if not osp.isfile(path):
             raise FileNotFoundError("Can't read annotation file '%s'" % path)

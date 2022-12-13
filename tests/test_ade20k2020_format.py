@@ -215,11 +215,7 @@ class Ade20k2020ImporterTest(TestCase):
     def test_save_hash(self):
         imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "ade20k2020", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_399)
     def test_save_hash_with_meta_file(self):
@@ -227,8 +223,4 @@ class Ade20k2020ImporterTest(TestCase):
             DUMMY_DATASET_DIR_META_FILE, "ade20k2020", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

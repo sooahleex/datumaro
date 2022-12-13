@@ -20,6 +20,12 @@ from pkg_resources import packaging
 from torch import nn
 from torchvision import transforms
 
+import onnx
+import onnxruntime as ort
+from openvino.inference_engine import IECore
+
+assert 'CUDAExecutionProvider' in ort.get_available_providers()
+
 from datumaro.components.media import MultiframeImage, PointCloud, Video
 
 if packaging.version.parse(torch.__version__) < packaging.version.parse("1.7.1"):
@@ -36,6 +42,23 @@ model = {
     "ViT-L/14": None,
     "ViT-L/14@336px": None,
 }
+
+models = {
+    'IMG': None,
+    'TXT': None,
+}
+
+add_cuda_path = False
+if add_cuda_path:
+    cuda_dir = 'D:/NVidia/CUDA/v11.0/bin'
+    cudnn_dir = 'D:/NVidia/CUDA/v11.0/bin'
+    if not (os.path.exists(cuda_dir) and os.path.exists(cudnn_dir)):
+        raise ValueError("Please specify correct path for CUDA and cuDNN. Otherwise onnxruntime cannot be imported.")
+    else:
+        if cuda_dir == cudnn_dir:
+            os.environ["PATH"] = cuda_dir + ';' + os.environ["PATH"]
+        else:
+            os.environ["PATH"] = cuda_dir + ';' + cudnn_dir + ';' + os.environ["PATH"]
 
 
 class LayerNorm(nn.LayerNorm):
@@ -264,9 +287,11 @@ class CLIP(nn.Module):
         # shape = [global_batch_size, global_batch_size]
         return logits_per_image, logits_per_text
 
+
 @lru_cache()
 def default_bpe():
     return os.path.join(model_folder, "bpe_simple_vocab_16e6.txt.gz")
+
 
 @lru_cache()
 def bytes_to_unicode():
@@ -294,6 +319,7 @@ def bytes_to_unicode():
     cs = [chr(n) for n in cs]
     return dict(zip(bs, cs))
 
+
 def get_pairs(word):
     """Return set of symbol pairs in a word.
     Word is represented as tuple of symbols (symbols being variable-length strings).
@@ -304,6 +330,7 @@ def get_pairs(word):
         pairs.add((prev_char, char))
         prev_char = char
     return pairs
+
 
 def basic_clean(text):
     text = ftfy.fix_text(text)
@@ -359,7 +386,7 @@ class SimpleTokenizer(object):
                     j = word.index(first, i)
                     new_word.extend(word[i:j])
                     i = j
-                except:
+                except Exception as e:
                     new_word.extend(word[i:])
                     break
 
@@ -398,6 +425,8 @@ class SimpleTokenizer(object):
 
 
 def encode_discrete(x):
+    x = torch.Tensor(x)
+    x = x.to(device, dtype=torch.float)
     prob = torch.sigmoid(x)
     z = torch.sign(prob - 0.5)
     return z
@@ -479,8 +508,11 @@ def load_model(model_name: str = "ViT-B/32", jit: bool = False):
 
     return model_
 
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
-def _image_features(model, image):
+# def _image_features(model, image, model_path):
+def _image_features(model=None, image=None, model_path=None, hash_mode=None, input_blob=None, output_blob=None):
     trans = transforms.Compose(
         [
             transforms.ToTensor(),
@@ -499,8 +531,20 @@ def _image_features(model, image):
     img = torch.Tensor(img)
     img = img.to(device, dtype=torch.float)
 
-    features = model.encode_image(img)
+    if hash_mode == 'onnx':
+        ort_session = ort.InferenceSession(model_path, providers=['CUDAExecutionProvider'])
+        input_name = ort_session.get_inputs()[0].name
+        output_name = ort_session.get_outputs()[0].name
+
+        output = ort_session.run([output_name], {input_name: to_numpy(img)})
+        features = output[0]
+    elif hash_mode == 'ir' or hash_mode == 'ir_int8':
+        h = model.infer(inputs={input_blob: img.cpu()})
+        features = torch.from_numpy(h[output_blob])
+    else:
+        features = model.encode_image(img)
     return features
+
 
 def _compute_hash(features):
     features = encode_discrete(features)
@@ -514,14 +558,41 @@ def _compute_hash(features):
     return hash_string
 
 
-def hash_inference(item):
+def load_model_onnx(model_name: str = "ViT-B/32"):
+    model_ = model[model_name]
+    if not model_:
+        model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.onnx")
+        model_ = onnx.load(model_path)
+        model[model_name] = model_
+    return model_
+
+
+def hash_inference(item, hash_mode='pytorch'):
     assert not type(item) in [
         Video,
         PointCloud,
         MultiframeImage,
     ], f"Media type should be Image, Current type={type(item)}"
 
-    model = load_model()
+    if hash_mode == 'ir':
+    # core = ov.Core()
+        img_xml_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.xml")
+        img_bin_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.bin")
+        txt_xml_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.xml")
+        txt_bin_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.bin")
+
+        ie = IECore()
+    elif hash_mode == 'ir_int8':
+        img_xml_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32_optimized.xml")
+        img_bin_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32_optimized.bin")
+        txt_xml_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.xml")
+        txt_bin_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.bin")
+
+        ie = IECore()
+
+    elif hash_mode == 'onnx':
+        img_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.onnx")
+        txt_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.onnx")
 
     if isinstance(item, str):
         if len(item.split()) > 1:
@@ -529,11 +600,47 @@ def hash_inference(item):
         else:
             prompt_text = f"a photo of a {item}"
         text = tokenize(prompt_text).to(device)
-        features = model.encode_text(text)
+        
+        if hash_mode == 'ir' or hash_mode == 'ir_int8':
+            txt_model = models['TXT']
+            if not txt_model:
+                txt_net = ie.read_network(txt_xml_model_path, txt_bin_model_path)
+                txt_model = ie.load_network(network=txt_net, device_name='CPU')
+            input_blob = next(iter(txt_model.input_info))
+            output_blob = next(iter(txt_model.outputs))
+
+            h = txt_model.infer(inputs={input_blob: text.cpu()})
+            features = torch.from_numpy(h[output_blob])
+
+        elif hash_mode == 'onnx':
+            ort_session = ort.InferenceSession(txt_model_path, providers=['CUDAExecutionProvider'])
+            input_name = ort_session.get_inputs()[0].name
+            output_name = ort_session.get_outputs()[0].name
+            output = ort_session.run([output_name], {input_name: to_numpy(text)})
+            features = output[0]
+        else:
+            model = load_model()
+            features = model.encode_text(text)
+
+        
     elif isinstance(item.data, type(None)):
         return []
     else:
-        features = _image_features(model, item.data)
+        if hash_mode == 'ir' or hash_mode == 'ir_int8':
+            img_model = models['IMG']
+            if not img_model:
+                img_net = ie.read_network(img_xml_model_path, img_bin_model_path)
+                img_model = ie.load_network(network=img_net, device_name='CPU')
+                input_blob = next(iter(img_model.input_info))
+                output_blob = next(iter(img_model.outputs))
+
+            features = _image_features(model=img_model, image=item.data, hash_mode=hash_mode, input_blob=input_blob, output_blob=output_blob)
+
+        elif hash_mode == 'onnx':
+            features = _image_features(image=item.data, model_path=img_model_path, hash_mode=hash_mode)
+        else:
+            model = load_model()
+            features = _image_features(model=model, image=item.data)
 
     hash_string = _compute_hash(features)
     return hash_string
@@ -563,6 +670,7 @@ def tokenize(
     """
     if isinstance(texts, str):
         texts = [texts]
+
     _tokenizer = SimpleTokenizer()
 
     sot_token = _tokenizer.encoder["<|startoftext|>"]

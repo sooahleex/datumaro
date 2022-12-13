@@ -263,11 +263,7 @@ class SynthiaImporterTest(TestCase):
             DUMMY_LABELS_SEGM_DATASET_DIR, "synthia", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_497)
     def test_save_hash_with_colored_masks(self):
@@ -275,11 +271,7 @@ class SynthiaImporterTest(TestCase):
             DUMMY_COLOR_SEGM_DATASET_DIR, "synthia", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_497)
     def test_save_hash_with_custom_labelmap(self):
@@ -287,11 +279,7 @@ class SynthiaImporterTest(TestCase):
             DUMMY_DATASET_DIR_CUSTOM_LABELMAP, "synthia", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_497)
     def test_save_hash_with_meta_file(self):
@@ -299,8 +287,4 @@ class SynthiaImporterTest(TestCase):
             DUMMY_DATASET_DIR_META_FILE, "synthia", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

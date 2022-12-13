@@ -71,12 +71,43 @@ class Searcher:
         hash_key = np.unpackbits(hash_key, axis=-1)
         return hash_key
 
-    def search_topk(self, query: Union[DatasetItem, str], topk: Optional[int] = None):
+    def search_topk(self, query: List[Union[DatasetItem, str]], topk: Optional[int] = None):
+    # def search_topk(self, query: Union[DatasetItem, str], topk: Optional[int] = None):
         """
         Search topk similar results based on hamming distance for query DatasetItem
         """
         if not topk:
             topk = self._topk
+
+        if isinstance(query, List):
+            # check all query in list has hash_key
+            query_hash_keys = []
+            for q in query:
+                q_hash_key = None
+                if isinstance(q, str):
+                    q_hash_key = hash_inference(q)
+                else:
+                    for annotation in q.annotations:
+                        if isinstance(annotation, HashKey):
+                            q_hash_key = annotation.hash_key
+                        break
+                if not q_hash_key:
+                    q_hash_key = q.set_hash_key
+                query_hash_keys.append(q_hash_key)
+            
+            topk_for_query = int(np.ceil(topk/len(query)) * 2)
+            result = []
+            for hash_key in query_hash_keys:
+                q_hash_key = self.unpack_hash_key(hash_key[0])
+                retrieval_keys = np.stack(self._retrieval_keys, axis=0)
+
+                logits = calculate_hamming(q_hash_key, retrieval_keys)
+                ind = np.argsort(logits)
+                item_list = np.array(self._item_list)[ind]
+                result_for_q = item_list[:topk_for_query].tolist()
+                result.extend(result_for_q)
+            return np.random.choice(result, size=topk)
+
 
         if isinstance(query, DatasetItem):
             query_key = None

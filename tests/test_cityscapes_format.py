@@ -750,11 +750,7 @@ class CityscapesExporterTest(TestCase):
     def test_save_hash(self):
         imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "cityscapes", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_with_train_label_map(self):
@@ -762,8 +758,4 @@ class CityscapesExporterTest(TestCase):
             DUMMY_TRAIN_DATASET_DIR, "cityscapes", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

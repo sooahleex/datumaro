@@ -234,14 +234,7 @@ class MnistImporterTest(TestCase):
         self.assertIn(MnistImporter.NAME, detected_formats)
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
-<<<<<<< HEAD
-    def test_can_detect(self):
-        imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "mnist", save_hash=True)
-        for item in imported_dataset:
-            self.assertTrue(bool(item.hash_key))
-=======
     def test_save_hash(self):
         imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "mnist", save_hash=True)
         for item in imported_dataset:
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

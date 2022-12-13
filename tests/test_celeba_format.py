@@ -178,11 +178,7 @@ class CelebaImporterTest(TestCase):
     def test_save_hash(self):
         imported_dataset = Dataset.import_from(DUMMY_DATASET_DIR, "celeba", save_hash=True)
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_475)
     def test_save_hash_with_meta_file(self):
@@ -190,8 +186,4 @@ class CelebaImporterTest(TestCase):
             DUMMY_DATASET_DIR_WITH_META_FILE, "celeba", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

@@ -21,14 +21,7 @@ class BratsPath:
     DATA_EXT = ".nii.gz"
 
 
-<<<<<<< HEAD:datumaro/plugins/brats_format.py
-class BratsExtractor(SourceExtractor):
-=======
 class BratsBase(SubsetBase):
-<<<<<<< HEAD
->>>>>>> data_searcher:datumaro/plugins/data_formats/brats.py
-=======
->>>>>>> data_searcher
     def __init__(self, path, save_hash=False):
         if not osp.isdir(path):
             raise FileNotFoundError("Can't read dataset directory '%s'" % path)
@@ -70,14 +63,7 @@ class BratsBase(SubsetBase):
                 images[i] = data[:, :, i]
 
             items[item_id] = DatasetItem(
-<<<<<<< HEAD
                 id=item_id, subset=self._subset, media=MultiframeImage(images, path=image_path), save_hash=self._save_hash
-=======
-                id=item_id,
-                subset=self._subset,
-                media=MultiframeImage(images, path=image_path),
-                save_hash=self._save_hash,
->>>>>>> data_searcher
             )
 
         masks_dir = osp.join(self._root_dir, BratsPath.LABELS + self._subset_suffix)

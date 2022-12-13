@@ -4,14 +4,6 @@ from unittest import TestCase
 
 import numpy as np
 
-<<<<<<< HEAD
-from datumaro.components.annotation import AnnotationType, Caption, Label, LabelCategories
-from datumaro.components.dataset import Dataset, DatasetItem
-from datumaro.components.media import Image
-from datumaro.components.model_inference import hash_inference
-from datumaro.components.searcher import Searcher
-from datumaro.plugins.datumaro_format.converter import DatumaroConverter
-=======
 import datumaro.plugins.data_formats.voc.format as VOC
 from datumaro.components.annotation import AnnotationType, Bbox, Caption, Label
 from datumaro.components.dataset import Dataset
@@ -21,15 +13,11 @@ from datumaro.components.model_inference import hash_inference
 from datumaro.components.searcher import Searcher
 from datumaro.plugins.data_formats.datumaro.exporter import DatumaroExporter
 from datumaro.plugins.data_formats.voc.exporter import VocExporter
->>>>>>> data_searcher
 from datumaro.util.image import load_image
 from datumaro.util.test_utils import TestDir
 
 from .requirements import Requirements, mark_requirement
 
-<<<<<<< HEAD
-DUMMY_DATASET_DIR = osp.join(osp.dirname(__file__), "assets", "datumaro_dataset")
-=======
 
 class TestExtractorBase(DatasetBase):
     def _label(self, voc_label):
@@ -37,7 +25,6 @@ class TestExtractorBase(DatasetBase):
 
     def categories(self):
         return VOC.make_voc_categories()
->>>>>>> data_searcher
 
 
 class SearcherTest(TestCase):
@@ -70,15 +57,7 @@ class SearcherTest(TestCase):
                 ),
             ]
         )
-<<<<<<< HEAD
-        with TestDir() as test_dir:
-            converter = partial(DatumaroConverter.convert, save_media=True)
-            converter(dataset, test_dir)
-            imported_dataset = Dataset.import_from(test_dir, "datumaro", save_hash=True)
-        return imported_dataset
-=======
         return dataset
->>>>>>> data_searcher
 
     @property
     def test_coco_dataset(self):
@@ -109,15 +88,7 @@ class SearcherTest(TestCase):
                 ),
             ]
         )
-<<<<<<< HEAD
-        with TestDir() as test_dir:
-            converter = partial(DatumaroConverter.convert, save_media=True)
-            converter(dataset, test_dir)
-            imported_dataset = Dataset.import_from(test_dir, "datumaro", save_hash=True)
-        return imported_dataset
-=======
         return dataset
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_inference(self):
@@ -135,22 +106,6 @@ class SearcherTest(TestCase):
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_inference_img_query(self):
-<<<<<<< HEAD
-        for i, item in enumerate(self.test_dataset):
-            if i == 1:
-                query = item
-        seacher = Searcher(self.test_dataset)
-        result = seacher.search_topk(query, topk=2)
-        self.assertEqual(query.subset, result[1].subset)
-        self.assertEqual(query.hash_key, result[1].hash_key)
-
-    @mark_requirement(Requirements.DATUM_GENERAL_REQ)
-    def test_inference_txt_query(self):
-        seacher = Searcher(self.test_coco_dataset)
-        result = seacher.search_topk("elephant", topk=2)
-        self.assertEqual(result[0].subset, result[0].subset)
-        self.assertEqual(result[0].hash_key, result[0].hash_key)
-=======
         with TestDir() as test_dir:
             converter = partial(DatumaroExporter.convert, save_media=True)
             converter(self.test_dataset, test_dir)
@@ -258,4 +213,3 @@ class SearcherTest(TestCase):
             self.assertEqual(query.image.data, None)
             with self.assertRaises(Exception):
                 searcher.search_topk(query, topk=2)
->>>>>>> data_searcher

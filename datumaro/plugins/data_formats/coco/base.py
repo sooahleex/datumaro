@@ -58,12 +58,14 @@ class _CocoBase(SubsetBase):
         subset=None,
         keep_original_category_ids=False,
         save_hash=False,
+        hash_mode='pytorch',
         **kwargs,
     ):
         if not osp.isfile(path):
             raise DatasetImportError(f"Can't find JSON file at '{path}'")
         self._path = path
         self._save_hash = save_hash
+        self._hash_mode = hash_mode
 
         if not subset:
             parts = osp.splitext(osp.basename(path))[0].split(task.name + "_", maxsplit=1)
@@ -196,6 +198,7 @@ class _CocoBase(SubsetBase):
                     annotations=[],
                     attributes={"id": img_id},
                     save_hash=self._save_hash,
+                    hash_mode=self._hash_mode,
                 )
             except Exception as e:
                 self._ctx.error_policy.report_item_error(e, item_id=(img_id, self._subset))

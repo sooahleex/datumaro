@@ -55,8 +55,4 @@ class CommonSuperResolutionImporterTest(TestCase):
             DUMMY_DATASET_DIR, "common_super_resolution", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

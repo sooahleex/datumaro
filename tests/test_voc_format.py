@@ -2029,8 +2029,4 @@ class VocExporterTest(TestCase):
             imported_dataset = Dataset.import_from(path, "voc", save_hash=True)
             for item in imported_dataset:
                 if item.media.data is not None:
-<<<<<<< HEAD
-                    self.assertTrue(item.hash_key)
-=======
                     self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

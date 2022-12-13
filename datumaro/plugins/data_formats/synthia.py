@@ -156,13 +156,9 @@ class SynthiaBase(SubsetBase):
                 if image:
                     image = Image(path=image)
 
-<<<<<<< HEAD
-                items[item_id] = DatasetItem(id=item_id, media=image, annotations=anno, save_hash=self._save_hash)
-=======
                 items[item_id] = DatasetItem(
                     id=item_id, media=image, annotations=anno, save_hash=self._save_hash
                 )
->>>>>>> data_searcher
 
         elif osp.isdir(osp.join(root_dir, SynthiaPath.SEMANTIC_SEGM_DIR)):
             gt_dir = osp.join(root_dir, SynthiaPath.SEMANTIC_SEGM_DIR)
@@ -184,13 +180,9 @@ class SynthiaBase(SubsetBase):
                 if image:
                     image = Image(path=image)
 
-<<<<<<< HEAD
-                items[item_id] = DatasetItem(id=item_id, media=image, annotations=anno, save_hash=self._save_hash)
-=======
                 items[item_id] = DatasetItem(
                     id=item_id, media=image, annotations=anno, save_hash=self._save_hash
                 )
->>>>>>> data_searcher
 
         return items
 

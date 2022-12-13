@@ -1109,11 +1109,7 @@ class KittiExporterTest(TestCase):
             osp.join(DUMMY_DATASET_DIR, "kitti_segmentation"), "kitti", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher
 
     @mark_requirement(Requirements.DATUM_GENERAL_REQ)
     def test_save_hash_detection(self):
@@ -1121,8 +1117,4 @@ class KittiExporterTest(TestCase):
             osp.join(DUMMY_DATASET_DIR, "kitti_detection"), "kitti", save_hash=True
         )
         for item in imported_dataset:
-<<<<<<< HEAD
-            self.assertTrue(bool(item.hash_key))
-=======
             self.assertTrue(bool(get_hash_key(item)))
->>>>>>> data_searcher

@@ -56,6 +56,7 @@ class DatasetItem:
         annotations: Optional[List[Annotation]] = None,
         attributes: Dict[str, Any] = None,
         save_hash: Optional[bool] = False,
+        hash_mode: Optional[str] = 'pytorch',
         image=None,
         point_cloud=None,
         related_images=None,
@@ -93,7 +94,7 @@ class DatasetItem:
             media = point_cloud
 
         if save_hash and bool(media):
-            hash_key = hash_inference(media)
+            hash_key = hash_inference(media, hash_mode)
             if not annotations:
                 annotations = []
             annotations.append(HashKey(hash_key))
