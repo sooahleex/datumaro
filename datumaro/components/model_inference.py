@@ -23,6 +23,7 @@ from torchvision import transforms
 import onnx
 import onnxruntime as ort
 from openvino.inference_engine import IECore
+from openvino.runtime import Core
 
 assert 'CUDAExecutionProvider' in ort.get_available_providers()
 
@@ -37,13 +38,19 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model_folder = "./tests/assets/searcher"
 
 model = {
+    "RN50": None,
     "ViT-B/32": None,
     "ViT-B/16": None,
     "ViT-L/14": None,
     "ViT-L/14@336px": None,
 }
 
-models = {
+model_ir = {
+    'IMG': None,
+    'TXT': None,
+}
+
+model_ir_int8 = {
     'IMG': None,
     'TXT': None,
 }
@@ -575,24 +582,36 @@ def hash_inference(item, hash_mode='pytorch'):
     ], f"Media type should be Image, Current type={type(item)}"
 
     if hash_mode == 'ir':
-    # core = ov.Core()
         img_xml_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.xml")
         img_bin_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.bin")
         txt_xml_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.xml")
         txt_bin_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.bin")
-
+        
+        # img_xml_model_path = os.path.join(model_folder, "clip_visual_RN50.xml")
+        # img_bin_model_path = os.path.join(model_folder, "clip_visual_RN50.bin")
+        # txt_xml_model_path = os.path.join(model_folder, "clip_text_RN50.xml")
+        # txt_bin_model_path = os.path.join(model_folder, "clip_text_RN50.bin")
         ie = IECore()
+
     elif hash_mode == 'ir_int8':
         img_xml_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32_optimized.xml")
         img_bin_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32_optimized.bin")
         txt_xml_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.xml")
         txt_bin_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.bin")
 
+        # img_xml_model_path = os.path.join(model_folder, "clip_visual_RN50_optimized.xml")
+        # img_bin_model_path = os.path.join(model_folder, "clip_visual_RN50_optimized.bin")
+        # txt_xml_model_path = os.path.join(model_folder, "clip_text_RN50.xml")
+        # txt_bin_model_path = os.path.join(model_folder, "clip_text_RN50.bin")
+        
         ie = IECore()
 
     elif hash_mode == 'onnx':
         img_model_path = os.path.join(model_folder, "clip_visual_ViT-B_32.onnx")
         txt_model_path = os.path.join(model_folder, "clip_text_ViT-B_32.onnx")
+
+        # img_model_path = os.path.join(model_folder, "clip_visual_RN50.onnx")
+        # txt_model_path = os.path.join(model_folder, "clip_text_RN50.onnx")
 
     if isinstance(item, str):
         if len(item.split()) > 1:
@@ -601,11 +620,24 @@ def hash_inference(item, hash_mode='pytorch'):
             prompt_text = f"a photo of a {item}"
         text = tokenize(prompt_text).to(device)
         
-        if hash_mode == 'ir' or hash_mode == 'ir_int8':
-            txt_model = models['TXT']
+        if hash_mode == 'ir':
+            txt_model = model_ir['TXT']
             if not txt_model:
                 txt_net = ie.read_network(txt_xml_model_path, txt_bin_model_path)
                 txt_model = ie.load_network(network=txt_net, device_name='CPU')
+                model_ir['TXT'] = txt_model
+            input_blob = next(iter(txt_model.input_info))
+            output_blob = next(iter(txt_model.outputs))
+
+            h = txt_model.infer(inputs={input_blob: text.cpu()})
+            features = torch.from_numpy(h[output_blob])
+
+        elif hash_mode == 'ir_int8':
+            txt_model = model_ir_int8['TXT']
+            if not txt_model:
+                txt_net = ie.read_network(txt_xml_model_path, txt_bin_model_path)
+                txt_model = ie.load_network(network=txt_net, device_name='CPU')
+                model_ir_int8['TXT'] = txt_model
             input_blob = next(iter(txt_model.input_info))
             output_blob = next(iter(txt_model.outputs))
 
@@ -622,17 +654,28 @@ def hash_inference(item, hash_mode='pytorch'):
             model = load_model()
             features = model.encode_text(text)
 
-        
     elif isinstance(item.data, type(None)):
         return []
     else:
-        if hash_mode == 'ir' or hash_mode == 'ir_int8':
-            img_model = models['IMG']
+        if hash_mode == 'ir':
+            img_model = model_ir['IMG']
             if not img_model:
                 img_net = ie.read_network(img_xml_model_path, img_bin_model_path)
                 img_model = ie.load_network(network=img_net, device_name='CPU')
-                input_blob = next(iter(img_model.input_info))
-                output_blob = next(iter(img_model.outputs))
+                model_ir['IMG'] = img_model
+            input_blob = next(iter(img_model.input_info))
+            output_blob = next(iter(img_model.outputs))
+
+            features = _image_features(model=img_model, image=item.data, hash_mode=hash_mode, input_blob=input_blob, output_blob=output_blob)
+
+        elif hash_mode == 'ir_int8':
+            img_model = model_ir_int8['IMG']
+            if not img_model:
+                img_net = ie.read_network(img_xml_model_path, img_bin_model_path)
+                img_model = ie.load_network(network=img_net, device_name='CPU')
+                model_ir_int8['IMG'] = img_model
+            input_blob = next(iter(img_model.input_info))
+            output_blob = next(iter(img_model.outputs))
 
             features = _image_features(model=img_model, image=item.data, hash_mode=hash_mode, input_blob=input_blob, output_blob=output_blob)
 
