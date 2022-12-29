@@ -9,6 +9,8 @@ import numpy as np
 from datumaro.components.annotation import HashKey
 from datumaro.components.dataset import IDataset
 from datumaro.components.dataset_base import DatasetItem
+from datumaro.components.errors import MediaTypeError
+from datumaro.components.media import MultiframeImage, PointCloud, Video
 from datumaro.components.model_inference import hash_inference
 
 
@@ -42,27 +44,22 @@ class Searcher:
         self._dataset = dataset
         self._topk = topk
 
-        retrieval_keys = []
+        database_keys = []
         item_list = []
         for datasetitem in self._dataset:
-            hash_key = None
-            # if hash_key=None, it means not inferenced
-            for annotation in datasetitem.annotations:
-                if isinstance(annotation, HashKey):
-                    hash_key = annotation.hash_key
-                    break
-
-            if not hash_key:
-                hash_key = datasetitem.set_hash_key
-
-            # if hash_key is empty, it means data is None or not proper data type
-            if hash_key:
-                hash_key = hash_key[0]
+            if type(datasetitem.media) in [Video, PointCloud, MultiframeImage]:
+                raise MediaTypeError(
+                    f"Media type should be Image, Current type={type(datasetitem.media)}"
+                )
+            try:
+                hash_key = datasetitem.set_hash_key[0]
                 hash_key = self.unpack_hash_key(hash_key)
-                retrieval_keys.append(hash_key)
+                database_keys.append(hash_key)
                 item_list.append(datasetitem)
+            except Exception:
+                hash_key = None
 
-        self._retrieval_keys = retrieval_keys
+        self._database_keys = database_keys
         self._item_list = item_list
 
     def unpack_hash_key(self, hash_key: List):
@@ -71,43 +68,46 @@ class Searcher:
         hash_key = np.unpackbits(hash_key, axis=-1)
         return hash_key
 
-    def search_topk(self, query: List[Union[DatasetItem, str]], topk: Optional[int] = None):
-    # def search_topk(self, query: Union[DatasetItem, str], topk: Optional[int] = None):
+    def search_topk(
+        self,
+        query: Union[DatasetItem, str, List[DatasetItem], List[str]],
+        topk: Optional[int] = None,
+    ):
         """
         Search topk similar results based on hamming distance for query DatasetItem
         """
         if not topk:
             topk = self._topk
 
+        if not self._database_keys:
+            # media.data is None case
+            raise ValueError("Database should have hash_key")
+        database_keys = np.stack(self._database_keys, axis=0)
+
         if isinstance(query, List):
-            # check all query in list has hash_key
-            query_hash_keys = []
+            topk_for_query = int(topk // len(query)) * 2
+            query_hash_key_list = []
             for q in query:
-                q_hash_key = None
-                if isinstance(q, str):
-                    q_hash_key = hash_inference(q)
-                else:
+                if isinstance(q, DatasetItem):
+                    q_hash_key = None
                     for annotation in q.annotations:
                         if isinstance(annotation, HashKey):
                             q_hash_key = annotation.hash_key
-                        break
-                if not q_hash_key:
-                    q_hash_key = q.set_hash_key
-                query_hash_keys.append(q_hash_key)
-            
-            topk_for_query = int(np.ceil(topk/len(query)) * 2)
-            result = []
-            for hash_key in query_hash_keys:
-                q_hash_key = self.unpack_hash_key(hash_key[0])
-                retrieval_keys = np.stack(self._retrieval_keys, axis=0)
+                            break
+                    query_hash_key_list.append(q_hash_key)
+                elif isinstance(q, str):
+                    q_hash_key = hash_inference(q)
+                    query_hash_key_list.append(q_hash_key)
 
-                logits = calculate_hamming(q_hash_key, retrieval_keys)
+            for query_hash_key in query_hash_key_list:
+                result_list = []
+                query_hash_key = self.unpack_hash_key(query_hash_key[0])
+                logits = calculate_hamming(query_hash_key, database_keys)
                 ind = np.argsort(logits)
-                item_list = np.array(self._item_list)[ind]
-                result_for_q = item_list[:topk_for_query].tolist()
-                result.extend(result_for_q)
-            return np.random.choice(result, size=topk)
 
+                item_list = np.array(self._item_list)[ind]
+                result_list.extend(item_list[:topk_for_query].tolist())
+            return np.random.choice(result_list, topk)
 
         if isinstance(query, DatasetItem):
             query_key = None
@@ -121,7 +121,10 @@ class Searcher:
         elif isinstance(query, str):
             query_key = hash_inference(query)
         else:
-            raise ValueError("Query should be DatasetItem or string")
+            raise MediaTypeError(
+                "Unexpected media type of query '%s'. "
+                "Expected 'DatasetItem' or 'string', actual'%s'" % (query, type(query))
+            )
 
         if not query_key:
             # media.data is None case
@@ -129,9 +132,7 @@ class Searcher:
 
         query_key = self.unpack_hash_key(query_key[0])
 
-        retrieval_keys = np.stack(self._retrieval_keys, axis=0)
-
-        logits = calculate_hamming(query_key, retrieval_keys)
+        logits = calculate_hamming(query_key, database_keys)
         ind = np.argsort(logits)
 
         item_list = np.array(self._item_list)[ind]
