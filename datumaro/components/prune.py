@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 import os
 import logging as log
+import pickle
 
 import numpy as np
-from typing import List
+from typing import Union, List
 import random
 import cv2
 from sklearn.cluster import KMeans
@@ -117,6 +118,30 @@ def hash_inference_text(item):
     return hash_string
 
 
+def tokenize_list(texts: Union[str, List[str]], context_length: int = 77, truncate: bool = True):
+    if isinstance(texts, str):
+        texts = [texts]
+
+    tokenizer = tokenizer_['clip-vit-base-patch320']
+    if not tokenizer:
+        tokenizer = Tokenizer.from_pretrained("openai/clip-vit-base-patch32")
+        tokenizer_['clip-vit-base-patch320'] = tokenizer
+    tokens = [tokenizer.encode(text).ids for text in texts]
+    result = np.zeros((1, context_length))
+    n = 0
+    for i, token in enumerate(tokens):
+        if len(token) > context_length:
+            if truncate:
+                eot_token = token.ids[-1]
+                token = token[:context_length]
+                token[-1] = eot_token
+
+        for j, token_ in enumerate(token):
+            result[:, n:n+j] = token_
+            n += 1
+    return result
+
+
 def calculate_hamming(B1, B2):
     """
     :param B1:  vector [n]
@@ -138,7 +163,7 @@ def tokenize(texts: str, context_length: int = 77, truncate: bool = True):
 
     if len(tokens) > context_length:
         if truncate:
-            eot_token = tokens.ids[-1]
+            eot_token = tokens[-1]
             tokens = tokens[:context_length]
             tokens[-1] = eot_token
 
@@ -147,65 +172,187 @@ def tokenize(texts: str, context_length: int = 77, truncate: bool = True):
     return result
 
 
+cifar10_templates = [
+    'a photo of a {}.',
+    'a blurry photo of a {}.',
+    'a black and white photo of a {}.',
+    'a low contrast photo of a {}.',
+    'a high contrast photo of a {}.',
+    'a bad photo of a {}.',
+    'a good photo of a {}.',
+    'a photo of a small {}.',
+    'a photo of a big {}.',
+    'a photo of the {}.',
+    'a blurry photo of the {}.',
+    'a black and white photo of the {}.',
+    'a low contrast photo of the {}.',
+    'a high contrast photo of the {}.',
+    'a bad photo of the {}.',
+    'a good photo of the {}.',
+    'a photo of the small {}.',
+    'a photo of the big {}.',
+]
+
+cifar100_templates = [
+    'a photo of a {}.',
+    'a blurry photo of a {}.',
+    'a black and white photo of a {}.',
+    'a low contrast photo of a {}.',
+    'a high contrast photo of a {}.',
+    'a bad photo of a {}.',
+    'a good photo of a {}.',
+    'a photo of a small {}.',
+    'a photo of a big {}.',
+    'a photo of the {}.',
+    'a blurry photo of the {}.',
+    'a black and white photo of the {}.',
+    'a low contrast photo of the {}.',
+    'a high contrast photo of the {}.',
+    'a bad photo of the {}.',
+    'a good photo of the {}.',
+    'a photo of the small {}.',
+    'a photo of the big {}.',
+]
+
+caltech101_templates = [
+    'a photo of a {}.',
+    'a painting of a {}.',
+    'a plastic {}.',
+    'a sculpture of a {}.',
+    'a sketch of a {}.',
+    'a tattoo of a {}.',
+    'a toy {}.',
+    'a rendition of a {}.',
+    'a embroidered {}.',
+    'a cartoon {}.',
+    'a {} in a video game.',
+    'a plushie {}.',
+    'a origami {}.',
+    'art of a {}.',
+    'graffiti of a {}.',
+    'a drawing of a {}.',
+    'a doodle of a {}.',
+    'a photo of the {}.',
+    'a painting of the {}.',
+    'the plastic {}.',
+    'a sculpture of the {}.',
+    'a sketch of the {}.',
+    'a tattoo of the {}.',
+    'the toy {}.',
+    'a rendition of the {}.',
+    'the embroidered {}.',
+    'the cartoon {}.',
+    'the {} in a video game.',
+    'the plushie {}.',
+    'the origami {}.',
+    'art of the {}.',
+    'graffiti of the {}.',
+    'a drawing of the {}.',
+    'a doodle of the {}.',
+]
+
+lgchem_templates = [
+    'a photo of a {}.',
+    'a bad photo of the {}.',
+    'a photo of the {}.',
+    'a photo of the small {}.',
+    'a photo of the big {}.'
+]
+
+svhn_templates = [
+    'a photo of the number: "{}".',
+]
+
 class Prune():
-    def __init__(self, dataset: IDataset, ratio_list: List[float], data_type: str, data_name: str, hashing_type: str = None) -> None:
+    def __init__(self, dataset: IDataset, ratio_list: List[float], cluster_method: str, data_name: str, hash_type: str = None, hash_base_model:str = None) -> None:
         """
 
         """
         self._dataset = dataset
-        # self._ratio = ratio
         self._ratio_list = ratio_list
-        self._data_type = data_type
+        self._cluster_method = cluster_method
         self._data_name = data_name
-        self._hashing_type = hashing_type
+        self._hash_type = hash_type
 
         database_keys = None
         item_list = []
         exception_items = []
+        labels = []
 
-        if self._data_type == 'random':
+        if self._cluster_method == 'random':
             for datasetitem in self._dataset:
                 item_list.append(datasetitem)
         else:
-            if self._hashing_type == 'use_label':
-                category_dict = {}
-                for label, indice in list(self._dataset.categories().values())[0]._indices.items():
-                    category_dict[indice] = f'a photo of {label}'
-            for datasetitem in tqdm(self._dataset):
-                try:
-                    if self._hashing_type == 'use_label':
-                        hash_key_img = hash_inference(datasetitem.media.data)[0]
-                        prompt = category_dict.get(datasetitem.annotations[0].label)
-                        inputs = tokenize(prompt)
-                        hash_key_txt = hash_inference_text(inputs)[0]
-                        hash_key = np.concatenate([hash_key_img, hash_key_txt])
-                    else:
-                        hash_key = hash_inference(datasetitem.media.data)[0]
-                    hash_key = np.unpackbits(hash_key, axis=-1)
+            try:
+                with open(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'rb') as handle:
+                # with open(f'cifar100_image_text_hash.pickle', 'rb') as handle:
+                    saved_dict = pickle.load(handle)
+                    database_keys = saved_dict['database_keys']
+                    labels = saved_dict['labels']
+                    item_list = saved_dict['item_list']
+            except:
+                if self._hash_type == 'img_txt':
+                    category_dict = {}
+                    for label, indice in list(self._dataset.categories().values())[0]._indices.items():
+                        category_dict[indice] = f'a photo of {label}'
+                elif self._hash_type == 'img_txt_prompt':
+                        if self._data_name == 'cifar10':
+                            category_dict[indice] = [template.format(label) for template in cifar10_templates]
+                        elif self._data_name == 'cifar100':
+                            category_dict[indice] = [template.format(label) for template in cifar100_templates]
+                        elif self._data_name == 'caltech101':
+                            category_dict[indice] = [template.format(label) for template in caltech101_templates]
+                        elif self._data_name == 'lgchem':
+                            category_dict[indice] = [template.format(label) for template in lgchem_templates]
+                        elif self._data_name == 'svhn':
+                            category_dict[indice] = [template.format(label) for template in svhn_templates]
+                for datasetitem in tqdm(self._dataset):
+                    try:
+                        if self._hash_type in ['img_txt', 'img_txt_prompt']:
+                            hash_key_img = hash_inference(datasetitem.media.data)[0]
+                            prompt = category_dict.get(datasetitem.annotations[0].label)
+                            if isinstance(prompt, List):
+                                prompt = (" ").join(prompt)
+                            inputs = tokenize(prompt)
+                            hash_key_txt = hash_inference_text(inputs)[0]
+                            hash_key = np.concatenate([hash_key_img, hash_key_txt])
+                        else:
+                            hash_key = hash_inference(datasetitem.media.data)[0]
+                        hash_key = np.unpackbits(hash_key, axis=-1)
 
-                    if database_keys is None:
-                        database_keys = hash_key.reshape(1, -1)
-                    else:
-                        database_keys = np.concatenate(
-                            (database_keys, hash_key.reshape(1, -1)), axis=0)
-                    item_list.append(datasetitem)
-                except Exception:
-                    exception_items.append(datasetitem)
-        self._database_keys = database_keys
-        self._item_list = item_list
-        self._exception_items = exception_items
+                        if database_keys is None:
+                            database_keys = hash_key.reshape(1, -1)
+                        else:
+                            database_keys = np.concatenate(
+                                (database_keys, hash_key.reshape(1, -1)), axis=0)
+                        item_list.append(datasetitem)
+                        labels.append(datasetitem.annotations[0].label)
+                    except Exception:
+                        exception_items.append(datasetitem)
+                save_dict = {'database_keys': database_keys, 'item_list': item_list, 'labels': labels}
+                with open(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'wb') as handle:
+                    pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                print(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle saved.......')
+
+            self._database_keys = database_keys
+            self._item_list = item_list
+            self._exception_items = exception_items
+
 
     def get_pruned(self) -> None:
-        if self._data_type == 'random':
+        if self._cluster_method == 'random':
             for i, ratio in enumerate(self._ratio_list):
                 self._ratio = ratio
 
+                dataset_len = len(self._item_list)
                 removed_items = []
-                num_selected_item = math.ceil(
-                    len(self._item_list)*self._ratio)
-                random.shuffle(self._item_list)
-                random.shuffle(self._item_list)
-                removed_items = self._item_list[num_selected_item:]
+                num_selected_item = math.ceil(dataset_len*self._ratio)
+                random_list = random.sample(range(dataset_len), num_selected_item)
+                removed_items = list(range(dataset_len))
+                for idx in random_list:
+                    removed_items.remove(idx)
+                removed_items = (np.array(self._item_list)[removed_items]).tolist()
+
                 if i == 0:
                     removed_items_1 = removed_items
                 elif i == 1:
@@ -216,17 +363,19 @@ class Prune():
                     removed_items_4 = removed_items
                 elif i == 4:
                     removed_items_5 = removed_items
-            return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5
+                elif i == 5:
+                    removed_items_6 = removed_items
+            return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
 
         for i, ratio in enumerate(self._ratio_list):
             self._ratio = ratio
 
-            if self._data_type == 'prune_centroid':
+            if self._cluster_method == 'centroid':
                 num_centers = math.ceil(len(self._database_keys)*self._ratio)
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
-            elif self._data_type in ['prune_close', 'clustered_random']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10']:
+            elif self._cluster_method in ['prune_close', 'clustered_random']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -234,8 +383,8 @@ class Prune():
                     num_centers = len(self._dataset.subsets())
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
-            elif self._data_type == 'query':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10']:
+            elif self._cluster_method == 'img_query_clust':
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -251,12 +400,10 @@ class Prune():
                         break
                 centroids = [self._database_keys[self._item_list.index(
                     i)] for i in list(center_dict.values())]
-                kmeans = KMeans(n_clusters=num_centers,
-                                init=centroids, random_state=0)
-                clusters = kmeans.fit_predict(self._database_keys)
+                kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
 
-            elif self._data_type == 'query_text':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10']:
+            elif self._cluster_method == 'txt_query_clust':
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             labels = list(category._indices.keys())
@@ -269,12 +416,10 @@ class Prune():
                     hash_key = np.unpackbits(hash_key, axis=-1)
                     centroids.append(hash_key)
 
-                kmeans = KMeans(n_clusters=num_centers,
-                                init=centroids, random_state=0)
-                clusters = kmeans.fit_predict(self._database_keys)
+                kmeans = KMeans(n_clusters=num_centers,init=centroids, random_state=0)
 
-            elif self._data_type == 'query_label':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10']:
+            elif self._cluster_method in ['img_txt_query_clust', 'img_txt_prompt_query_clust']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -287,17 +432,29 @@ class Prune():
                             label_ = anno.label
                             if not center_dict.get(label_):
                                 center_dict[label_] = item
-                            prompt = "a photo of {}".format(label_)
+                            if self._cluster_method == 'img_txt_query_clust':
+                                prompt = "a photo of {}".format(label_)
+                            else:
+                                if self._data_name == 'cifar10':
+                                    prompt = [template.format(label_) for template in cifar10_templates]
+                                elif self._data_name == 'cifar100':
+                                    prompt = [template.format(label_) for template in cifar100_templates]
+                                elif self._data_name == 'caltech101':
+                                    prompt = [template.format(label_) for template in caltech101_templates]
+                                elif self._data_name == 'lgchem':
+                                    prompt = [template.format(label_) for template in lgchem_templates]
+                                elif self._data_name == 'svhn':
+                                    prompt = [template.format(label_) for template in svhn_templates]
+                                prompt = (" ").join(prompt)
                             inputs = tokenize(prompt)
                             hash_key = hash_inference_text(inputs)[0]
                             hash_key = np.unpackbits(hash_key, axis=-1)
                             label_hash.append(hash_key)
                     if all(center_dict.values()):
                         break
-                centroids = [np.concatenate([self._database_keys[self._item_list.index(
-                    item_index)], label_hash[i]]) for item_index, i in enumerate(list(center_dict.values()))]
+                centroids = [self._database_keys[self._item_list.index(i)] for i in list(center_dict.values())]
+                kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
 
-            # kmeans = KMeans(n_clusters=num_centers)
             clusters = kmeans.fit_predict(self._database_keys)
             cluster_centers = kmeans.cluster_centers_
 
@@ -305,13 +462,13 @@ class Prune():
             for cluster in range(num_centers):
                 cluster_center = cluster_centers[cluster]
                 cluster_items_idx = np.where(clusters == cluster)[0]
-                if self._data_type == 'prune_centroid':
+                if self._cluster_method == 'centroid':
                     num_selected_item = 1
-                elif self._data_type in ['prune_close', 'clustered_random', 'query', 'query_text']:
+                elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_query_clust', 'img_txt_prompt_query_clust']:
                     num_items = len(cluster_items_idx)
                     num_selected_item = math.ceil(num_items*self._ratio)
 
-                if self._data_type == 'clustered_random':
+                if self._cluster_method == 'clustered_random':
                     random.shuffle(cluster_items_idx)
                     for idx in cluster_items_idx[num_selected_item:]:
                         removed_items.append(self._item_list[idx])
@@ -333,21 +490,7 @@ class Prune():
                 removed_items_4 = removed_items
             elif i == 4:
                 removed_items_5 = removed_items
+            elif i == 5:
+                removed_items_6 = removed_items
 
-        return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5
-
-        # num_points = len(self._database_keys)
-        # dimension = self._database_keys[0].shape[0]
-        # centers = torch.zeros(num_centers, dimension, dtype=torch.float).to(device)
-        # used = torch.zeros(num_points, dtype=torch.long)
-
-        # for i in range(num_centers):
-        #     while True:
-        #         cur_id = random.randint(0, num_points - 1)
-        #         if used[cur_id]> 0:
-        #             continue
-        #         used[cur_id] = 1
-        #         centers[i] = self._database_keys[cur_id]
-        #         break
-
-        # 나중에는 Hashkey 받아와서 하도록 수정해야할듯?
+        return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
