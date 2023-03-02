@@ -21,7 +21,7 @@ print('dataset len : ', len(dataset))
 hash_base_model = 'clip'
 cluster_method = 'centroid' # random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust
 print('---- data type : ', cluster_method)
-hash_type = 'img' # img_txt, txt, img, img_txt_prompt
+hash_type = 'img_txt_prompt' # img_txt, txt, img, img_txt_prompt
 print('---- hashing_type : ', hash_type)
 Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
 removed_items_1, removed_items_5, removed_items_10, removed_items_20, removed_items_50, removed_items_80 = Pruner.get_pruned()
@@ -44,7 +44,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.01 : ', len(dataset_1))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_1_{cluster_method}_prompts saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method} saved.....')
 dataset_1.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}', 'imagenet', save_images=True)
 
 
@@ -65,7 +65,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.05 : ', len(dataset_5))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_5_{cluster_method}_prompts saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method} saved.....')
 dataset_5.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.1
@@ -85,7 +85,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.1 : ', len(dataset_10))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_10_{cluster_method}_prompts saved......')
+print(f'{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method} saved......')
 dataset_10.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.2
@@ -105,7 +105,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.2 : ', len(dataset_20))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_20_{cluster_method}_prompts saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method} saved......')
 dataset_20.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.5
@@ -125,7 +125,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.5 : ', len(dataset_50))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_50_{cluster_method}_prompts saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_50_{cluster_method} saved......')
 dataset_50.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_50_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.8
@@ -144,5 +144,5 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.8 : ', len(dataset))
 print(f'{n} data removed')
 
-print(f'{data_name}/{data_name}_80_{cluster_method}_prompts saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_80_{cluster_method} saved......')
 dataset.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_80_{cluster_method}', 'imagenet', save_images=True)

@@ -284,7 +284,7 @@ class Prune():
                 item_list.append(datasetitem)
         else:
             try:
-                with open(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'rb') as handle:
+                with open(f'./hash_pickles/{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'rb') as handle:
                 # with open(f'cifar100_image_text_hash.pickle', 'rb') as handle:
                     saved_dict = pickle.load(handle)
                     database_keys = saved_dict['database_keys']
@@ -330,7 +330,7 @@ class Prune():
                     except Exception:
                         exception_items.append(datasetitem)
                 save_dict = {'database_keys': database_keys, 'item_list': item_list, 'labels': labels}
-                with open(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'wb') as handle:
+                with open(f'./hash_pickles/{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'wb') as handle:
                     pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 print(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle saved.......')
 
