@@ -9,14 +9,15 @@ dataset_path_dict = {
     "cifar100": "/media/hdd2/datumaro/cifar100_train",
     "svhn": "/media/hdd2/datumaro/svhn/train_data",
     "caltech101": "/media/hdd2/datumaro/caltech101/train_data",
-    "lgchem": '/media/hdd2/datumaro/lgchem/train_data'
+    "lgchem": '/media/hdd2/datumaro/lgchem/train_data',
+    "food101": '/media/hdd2/datumaro/food101/train_data'
 }
 
 dataset_format_dict = {
-    "cifar10": "cifar", "cifar100": "cifar", "svhn": "imagenet", "caltech101":"imagenet", "lgchem":"imagenet"
+    "cifar10": "cifar", "cifar100": "cifar", "svhn": "imagenet", "caltech101":"imagenet", "lgchem":"imagenet", "food101":"imagenet"
 }
 
-data_name = 'svhn'
+data_name = 'food101'
 dataset = dm.Dataset.import_from(dataset_path_dict[data_name], format=dataset_format_dict[data_name])
 print(f'{data_name} dataset len : ', len(dataset))
 
@@ -24,10 +25,10 @@ hash_base_model = 'clip' # clip, effb0_trained, effb0_init
 print('---- hash_base_model : ', hash_base_model)
 
 # random, clustered_random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_coop_query_clust
-cluster_method = 'img_txt_coop_query_clust'
+cluster_method = 'clustered_random'
 print('---- cluster_method : ', cluster_method)
 
-hash_type = 'img_txt_coop' # img_txt, txt, img, img_txt_prompt, img_txt_coop
+hash_type = 'img_txt_prompt' # img_txt, txt, img, img_txt_prompt, img_txt_coop
 print('---- hashing_type : ', hash_type)
 
 Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)

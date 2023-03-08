@@ -267,6 +267,9 @@ svhn_templates = [
     'a photo of house address number: "{}".'
 ] #    'a photo of the number: "{}".',
 
+food101_templates = [
+    'a photo of {}, a type of food.',
+]
 class Prune():
     def __init__(self, dataset: IDataset, ratio_list: List[float], cluster_method: str, data_name: str, hash_type: str = None, hash_base_model:str = None) -> None:
         """
@@ -311,6 +314,8 @@ class Prune():
                             category_dict[indice] = [template.format(label) for template in lgchem_templates]
                         elif self._data_name == 'svhn':
                             category_dict[indice] = [template.format(label) for template in svhn_templates]
+                        elif self._data_name == 'food101':
+                            category_dict[indice] = [template.format(label) for template in food101_templates]
                 elif self._hash_type == 'img_txt_coop':
                     category_dict = {}
                     for label, indice in list(self._dataset.categories().values())[0]._indices.items():
@@ -385,7 +390,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
             elif self._cluster_method in ['prune_close', 'clustered_random']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -394,7 +399,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
             elif self._cluster_method == 'img_query_clust':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -413,7 +418,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
 
             elif self._cluster_method == 'txt_query_clust':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             labels = list(category._indices.keys())
@@ -429,7 +434,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers,init=centroids, random_state=0)
 
             elif self._cluster_method in ['img_txt_query_clust', 'img_txt_prompt_query_clust', 'img_txt_coop_query_clust']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -458,6 +463,8 @@ class Prune():
                                     prompt = [template.format(label_) for template in lgchem_templates]
                                 elif self._data_name == 'svhn':
                                     prompt = [template.format(label_) for template in svhn_templates]
+                                elif self._data_name == 'food101':
+                                    prompt = [template.format(label_) for template in food101_templates]
                                 prompt = (" ").join(prompt)
                             inputs = tokenize(prompt)
                             hash_key = hash_inference_text(inputs)[0]
