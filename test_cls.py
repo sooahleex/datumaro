@@ -1,28 +1,35 @@
 import os
 import datumaro as dm
-import time
 import copy
 
 from datumaro.components.prune import Prune
 
-data_name = 'svhn'
-# cifar10 train
-# dataset = dm.Dataset.import_from("/media/hdd2/datumaro/cifar10_train/cifar-10-batches-py", "cifar")
-# cifar100
-# dataset = dm.Dataset.import_from("/media/hdd2/datumaro/cifar100_train", format="cifar")
-# svhn
-dataset = dm.Dataset.import_from("/media/hdd2/datumaro/svhn/train_data", format="imagenet")
-# caltech101
-# dataset = dm.Dataset.import_from("/media/hdd2/datumaro/caltech101/train_data", format="imagenet")
-# lg_chem
-# dataset = dm.Dataset.import_from('/media/hdd2/datumaro/lgchem/train_data', format='imagenet')
-print('dataset len : ', len(dataset))
+dataset_path_dict = {
+    "cifar10": "/media/hdd2/datumaro/cifar10_train/cifar-10-batches-py",
+    "cifar100": "/media/hdd2/datumaro/cifar100_train",
+    "svhn": "/media/hdd2/datumaro/svhn/train_data",
+    "caltech101": "/media/hdd2/datumaro/caltech101/train_data",
+    "lgchem": '/media/hdd2/datumaro/lgchem/train_data'
+}
 
-hash_base_model = 'clip'
-cluster_method = 'centroid' # random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust
-print('---- data type : ', cluster_method)
-hash_type = 'img_txt_prompt' # img_txt, txt, img, img_txt_prompt
+dataset_format_dict = {
+    "cifar10": "cifar", "cifar100": "cifar", "svhn": "imagenet", "caltech101":"imagenet", "lgchem":"imagenet"
+}
+
+data_name = 'svhn'
+dataset = dm.Dataset.import_from(dataset_path_dict[data_name], format=dataset_format_dict[data_name])
+print(f'{data_name} dataset len : ', len(dataset))
+
+hash_base_model = 'clip' # clip, effb0_trained, effb0_init
+print('---- hash_base_model : ', hash_base_model)
+
+# random, clustered_random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_coop_query_clust
+cluster_method = 'img_txt_coop_query_clust'
+print('---- cluster_method : ', cluster_method)
+
+hash_type = 'img_txt_coop' # img_txt, txt, img, img_txt_prompt, img_txt_coop
 print('---- hashing_type : ', hash_type)
+
 Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
 removed_items_1, removed_items_5, removed_items_10, removed_items_20, removed_items_50, removed_items_80 = Pruner.get_pruned()
 print(f'exception items number : {len(Pruner._exception_items)}')
@@ -40,7 +47,7 @@ for item in removed_items_1:
 n = 0
 for id_, subset in zip(removed_ids, removed_subsets):
     dataset_1.remove(id_, subset)
-    n += 1
+    n += 1 
 print('remain dataset len for 0.01 : ', len(dataset_1))
 print(f'{n} data removed')
 
@@ -85,7 +92,7 @@ for id_, subset in zip(removed_ids, removed_subsets):
 print('remain dataset len for 0.1 : ', len(dataset_10))
 print(f'{n} data removed')
 
-print(f'{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method} saved......')
+print(f'{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method} saved......')
 dataset_10.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.2

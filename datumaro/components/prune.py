@@ -259,9 +259,13 @@ lgchem_templates = [
     'a photo of the big {}.'
 ]
 
-svhn_templates = [
-    'a photo of the number: "{}".',
+coop_template = [
+    'X X X X X X X X X X X X X X X X {}.'
 ]
+
+svhn_templates = [
+    'a photo of house address number: "{}".'
+] #    'a photo of the number: "{}".',
 
 class Prune():
     def __init__(self, dataset: IDataset, ratio_list: List[float], cluster_method: str, data_name: str, hash_type: str = None, hash_base_model:str = None) -> None:
@@ -285,7 +289,6 @@ class Prune():
         else:
             try:
                 with open(f'./hash_pickles/{self._data_name}_{hash_base_model}_{self._hash_type}.pickle', 'rb') as handle:
-                # with open(f'cifar100_image_text_hash.pickle', 'rb') as handle:
                     saved_dict = pickle.load(handle)
                     database_keys = saved_dict['database_keys']
                     labels = saved_dict['labels']
@@ -296,6 +299,8 @@ class Prune():
                     for label, indice in list(self._dataset.categories().values())[0]._indices.items():
                         category_dict[indice] = f'a photo of {label}'
                 elif self._hash_type == 'img_txt_prompt':
+                    category_dict = {}
+                    for label, indice in list(self._dataset.categories().values())[0]._indices.items():
                         if self._data_name == 'cifar10':
                             category_dict[indice] = [template.format(label) for template in cifar10_templates]
                         elif self._data_name == 'cifar100':
@@ -306,9 +311,14 @@ class Prune():
                             category_dict[indice] = [template.format(label) for template in lgchem_templates]
                         elif self._data_name == 'svhn':
                             category_dict[indice] = [template.format(label) for template in svhn_templates]
+                elif self._hash_type == 'img_txt_coop':
+                    category_dict = {}
+                    for label, indice in list(self._dataset.categories().values())[0]._indices.items():
+                        category_dict[indice] = [template.format(label) for template in coop_template]
+
                 for datasetitem in tqdm(self._dataset):
                     try:
-                        if self._hash_type in ['img_txt', 'img_txt_prompt']:
+                        if self._hash_type in ['img_txt', 'img_txt_prompt', 'img_txt_coop']:
                             hash_key_img = hash_inference(datasetitem.media.data)[0]
                             prompt = category_dict.get(datasetitem.annotations[0].label)
                             if isinstance(prompt, List):
@@ -375,7 +385,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
             elif self._cluster_method in ['prune_close', 'clustered_random']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -384,7 +394,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, random_state=0)
 
             elif self._cluster_method == 'img_query_clust':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             num_centers = len(list(category._indices.keys()))
@@ -403,7 +413,7 @@ class Prune():
                 kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
 
             elif self._cluster_method == 'txt_query_clust':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100']:
+                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             labels = list(category._indices.keys())
@@ -418,7 +428,7 @@ class Prune():
 
                 kmeans = KMeans(n_clusters=num_centers,init=centroids, random_state=0)
 
-            elif self._cluster_method in ['img_txt_query_clust', 'img_txt_prompt_query_clust']:
+            elif self._cluster_method in ['img_txt_query_clust', 'img_txt_prompt_query_clust', 'img_txt_coop_query_clust']:
                 if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
@@ -434,6 +444,9 @@ class Prune():
                                 center_dict[label_] = item
                             if self._cluster_method == 'img_txt_query_clust':
                                 prompt = "a photo of {}".format(label_)
+                            elif self._cluster_method == 'img_txt_coop_query_clust':
+                                prompt = [template.format(label_) for template in coop_template]
+                                prompt = (" ").join(prompt)
                             else:
                                 if self._data_name == 'cifar10':
                                     prompt = [template.format(label_) for template in cifar10_templates]
@@ -464,9 +477,10 @@ class Prune():
                 cluster_items_idx = np.where(clusters == cluster)[0]
                 if self._cluster_method == 'centroid':
                     num_selected_item = 1
-                elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_query_clust', 'img_txt_prompt_query_clust']:
+                elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_coop_query_clust', 'img_txt_query_clust', 'img_txt_prompt_query_clust']:
                     num_items = len(cluster_items_idx)
-                    num_selected_item = math.ceil(num_items*self._ratio)
+                    # num_selected_item = math.ceil(num_items*self._ratio)
+                    num_selected_item = int(np.round(num_items*self._ratio))
 
                 if self._cluster_method == 'clustered_random':
                     random.shuffle(cluster_items_idx)
