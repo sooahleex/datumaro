@@ -349,9 +349,9 @@ class Prune():
                     pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 print(f'{self._data_name}_{hash_base_model}_{self._hash_type}.pickle saved.......')
 
-            self._database_keys = database_keys
-            self._item_list = item_list
-            self._exception_items = exception_items
+        self._database_keys = database_keys
+        self._item_list = item_list
+        self._exception_items = exception_items
 
 
     def get_pruned(self) -> None:

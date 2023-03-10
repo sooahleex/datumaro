@@ -24,8 +24,8 @@ print(f'{data_name} dataset len : ', len(dataset))
 hash_base_model = 'clip' # clip, effb0_trained, effb0_init
 print('---- hash_base_model : ', hash_base_model)
 
-# random, clustered_random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_coop_query_clust
-cluster_method = 'clustered_random'
+# random, clustered_random, centroid, img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_prompt_query_clust, img_txt_coop_query_clust
+cluster_method = 'img_txt_prompt_query_clust'
 print('---- cluster_method : ', cluster_method)
 
 hash_type = 'img_txt_prompt' # img_txt, txt, img, img_txt_prompt, img_txt_coop
