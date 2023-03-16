@@ -417,7 +417,7 @@ class Prune():
                 self._num_centers = math.ceil(len(self._database_keys)*self._ratio)
                 kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
 
-            elif self._cluster_method in ['prune_close', 'clustered_random', 'cls_hist', 'entropy']:
+            elif self._cluster_method in ['prune_close', 'clustered_random', 'cls_hist', 'entropy', 'center_dist_one', 'center_dist_multi']:
                 kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
 
             elif self._cluster_method  == 'query_clust':
@@ -497,11 +497,7 @@ class Prune():
                 cluster_items_idx = np.where(clusters == cluster_id)[0]
                 if self._cluster_method == 'centroid':
                     num_selected_item = 1
-                # elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_coop_query_clust', 'img_txt_query_clust', 'img_txt_prompt_query_clust']:
                 else:
-                    # num_items = len(cluster_items_idx)
-                    # # num_selected_item = math.ceil(num_items*self._ratio)
-                    # num_selected_item = int(np.round(num_items*self._ratio))
                     num_selected_item = norm_cluster_num_item_list[cluster_id]
 
                 if self._cluster_method == 'clustered_random':
@@ -521,7 +517,6 @@ class Prune():
                     for j, n_ in enumerate((n)):
                         n_ = int(n_)
                         n_list = clustered_item_list[sum_n:sum_n+n_,]
-                        # num_selected_item = math.ceil(n_*ratio)
                         num_selected_item = int(np.round(n_*ratio))
                         if max_index and j == max_index:
                             num_selected_item = 1
@@ -542,7 +537,62 @@ class Prune():
                     assert len(choices) == num_selected_item
                     assert len(np.unique(choices)) == len(choices)
                     selected_item_indexs += [cluster_items_idx[choices]]
+                elif self._cluster_method == 'center_dist_one':
+                    c_dist = calculate_hamming(cluster_center, cluster_centers)
+                    near_c = cluster_centers[np.argsort(c_dist)[1]]
 
+                    cluster_items = self._database_keys[cluster_items_idx, ]
+                    dist_btw_near_c = calculate_hamming(near_c, cluster_items)
+                    ind_btw_near_c = np.argsort(dist_btw_near_c)
+                    item_indices_btw_near_c = cluster_items_idx[ind_btw_near_c]
+
+                    dist = calculate_hamming(cluster_center, cluster_items)
+                    ind = np.argsort(dist)
+                    item_indices = cluster_items_idx[ind]
+                    if num_selected_item > 1:
+                        # select nearest one for center of cluster
+                        selected_item_indexs.append(item_indices[0])
+                        # select nearest items for center of close cluster
+                        for idx in item_indices_btw_near_c[:num_selected_item-1]:
+                            selected_item_indexs.append(idx)
+                    elif num_selected_item == 1:
+                        selected_item_indexs.append(item_indices[0])
+
+                elif self._cluster_method == 'center_dist_multi':
+                    selected_item_indexs_for_c = []
+                    c_dist_indices = np.argsort(calculate_hamming(cluster_center, cluster_centers))
+                    cluster_items = self._database_keys[cluster_items_idx, ]
+
+                    dist = calculate_hamming(cluster_center, cluster_items)
+                    ind = np.argsort(dist)
+                    item_indices = cluster_items_idx[ind]
+
+                    near_item_for_clust_dict = {}
+                    for c_dist_indice in c_dist_indices[1:]:
+                        near_c = cluster_centers[c_dist_indice]
+                        dist_btw_near_c = calculate_hamming(near_c, cluster_items)
+                        ind_btw_near_c = np.argsort(dist_btw_near_c)
+                        item_indices_btw_near_c = cluster_items_idx[ind_btw_near_c]
+                        near_item_for_clust_dict[c_dist_indice] = item_indices_btw_near_c
+                    
+                    item_idx = 0
+                    if num_selected_item > 0:
+                        for i, (c_indice, item_indices_btw_near_c) in enumerate(near_item_for_clust_dict.items()):
+                            if num_selected_item == 1:
+                                # select nearest one for center of cluster
+                                selected_item_indexs_for_c.append(item_indices[0])
+                                break
+                            else:
+                                # select nearest one for center of cluster
+                                selected_item_indexs_for_c.append(item_indices[0])
+                                if len(selected_item_indexs_for_c) == num_selected_item:
+                                    break
+                                selected_item_indexs_for_c.append(item_indices_btw_near_c[item_idx])
+                                if c_indice == len(cluster_centers):
+                                    item_idx += 1
+                                if len(selected_item_indexs_for_c) == num_selected_item:
+                                    break
+                    selected_item_indexs.extend(selected_item_indexs_for_c)
 
                 else:
                     cluster_items = self._database_keys[cluster_items_idx, ]
@@ -552,7 +602,7 @@ class Prune():
                     for idx in item_list[num_selected_item:]:
                         removed_items.append(self._item_list[idx])
 
-            if self._cluster_method == 'cls_hist':
+            if self._cluster_method in ['cls_hist', 'center_dist_one', 'center_dist_multi']:
                 dataset_len = len(self._item_list)
                 removed_items_index = list(range(dataset_len))
                 for idx in selected_item_indexs:

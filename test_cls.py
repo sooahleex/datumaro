@@ -17,7 +17,7 @@ dataset_format_dict = {
     "cifar10": "cifar", "cifar100": "cifar", "svhn": "imagenet", "caltech101":"imagenet", "lgchem":"imagenet", "food101":"imagenet"
 }
 
-data_name = 'food101'
+data_name = 'caltech101'
 dataset = dm.Dataset.import_from(dataset_path_dict[data_name], format=dataset_format_dict[data_name])
 print(f'{data_name} dataset len : ', len(dataset))
 
@@ -27,8 +27,8 @@ print('---- hash_base_model : ', hash_base_model)
 # random, clustered_random, centroid, 
 # img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_prompt_query_clust, img_txt_coop_query_clust
 # query_avg_clust, query_clust
-# cls_hist, entropy
-cluster_method = 'entropy'
+# cls_hist, entropy, center_dist_one, center_dist_multi
+cluster_method = 'center_dist_one'
 print('---- cluster_method : ', cluster_method)
 
 hash_type = 'img' # img_txt, txt, img, img_txt_prompt, img_txt_coop
@@ -56,7 +56,7 @@ print('remain dataset len for 0.01 : ', len(dataset_1))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method} saved.....')
-dataset_1.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}', 'imagenet', save_images=True)
+dataset_1.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}', 'imagenet', save_images=True)
 
 
 ###### 0.05
@@ -77,7 +77,7 @@ print('remain dataset len for 0.05 : ', len(dataset_5))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method} saved.....')
-dataset_5.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}', 'imagenet', save_images=True)
+dataset_5.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.1
 dataset_10 = copy.deepcopy(dataset)
@@ -97,7 +97,7 @@ print('remain dataset len for 0.1 : ', len(dataset_10))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method} saved......')
-dataset_10.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}', 'imagenet', save_images=True)
+dataset_10.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.2
 dataset_20 = copy.deepcopy(dataset)
@@ -117,7 +117,7 @@ print('remain dataset len for 0.2 : ', len(dataset_20))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method} saved......')
-dataset_20.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}', 'imagenet', save_images=True)
+dataset_20.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.5
 dataset_50 = copy.deepcopy(dataset)
@@ -137,7 +137,7 @@ print('remain dataset len for 0.5 : ', len(dataset_50))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_50_{cluster_method} saved......')
-dataset_50.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_50_{cluster_method}', 'imagenet', save_images=True)
+dataset_50.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_50_{cluster_method}', 'imagenet', save_images=True)
 
 ###### 0.8
 removed_items_80.extend(Pruner._exception_items)
@@ -156,4 +156,4 @@ print('remain dataset len for 0.8 : ', len(dataset))
 print(f'{n} data removed')
 
 print(f'{data_name}_{hash_base_model}_{hash_type}_80_{cluster_method} saved......')
-dataset.export(f'prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_80_{cluster_method}', 'imagenet', save_images=True)
+dataset.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_80_{cluster_method}', 'imagenet', save_images=True)
