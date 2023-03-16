@@ -14,6 +14,8 @@ from openvino.inference_engine import IECore
 import math
 from tokenizers import Tokenizer
 from tqdm import tqdm
+import torch
+import matplotlib.pyplot as plt
 
 from datumaro.components.dataset import IDataset
 from datumaro.components.annotation import LabelCategories, Label
@@ -25,6 +27,7 @@ model = {
     "TXT": None,
 }
 tokenizer_ = {'clip-vit-base-patch320': None}
+coop = {'checkpoint': None}
 
 def img_center_crop(image, size):
     """
@@ -171,6 +174,21 @@ def tokenize(texts: str, context_length: int = 77, truncate: bool = True):
         result[:, i] = token
     return result
 
+def load_checkpoint(fpath):
+    map_location = None if torch.cuda.is_available() else "cpu"
+    checkpoint = torch.load(fpath, map_location=map_location)
+    checkpoint_ = checkpoint['state_dict']
+    return checkpoint_
+
+def coop_hash(class_hash):
+    checkpoint = coop['checkpoint']
+    if not checkpoint:
+        coop_path = './coop_vit_b32_nctx16_s1/prompt_learner/model.pth.tar-50'
+        checkpoint = load_checkpoint(coop_path)
+        coop['checkpoint'] = checkpoint
+    ctx = checkpoint['ctx']
+    text_hash = np.concatenate((_compute_hash(ctx.detach().cpu().numpy()), np.expand_dims(class_hash, axis=0)))
+    return text_hash
 
 cifar10_templates = [
     'a photo of a {}.',
@@ -259,10 +277,6 @@ lgchem_templates = [
     'a photo of the big {}.'
 ]
 
-coop_template = [
-    'X X X X X X X X X X X X X X X X {}.'
-]
-
 svhn_templates = [
     'a photo of house address number: "{}".'
 ] #    'a photo of the number: "{}".',
@@ -272,9 +286,6 @@ food101_templates = [
 ]
 class Prune():
     def __init__(self, dataset: IDataset, ratio_list: List[float], cluster_method: str, data_name: str, hash_type: str = None, hash_base_model:str = None) -> None:
-        """
-
-        """
         self._dataset = dataset
         self._ratio_list = ratio_list
         self._cluster_method = cluster_method
@@ -285,6 +296,14 @@ class Prune():
         item_list = []
         exception_items = []
         labels = []
+
+        if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
+            for category in self._dataset.categories().values():
+                if isinstance(category, LabelCategories):
+                    num_centers = len(list(category._indices.keys()))
+        else:
+            num_centers = len(self._dataset.subsets())
+        self._num_centers = num_centers
 
         if self._cluster_method == 'random':
             for datasetitem in self._dataset:
@@ -319,11 +338,11 @@ class Prune():
                 elif self._hash_type == 'img_txt_coop':
                     category_dict = {}
                     for label, indice in list(self._dataset.categories().values())[0]._indices.items():
-                        category_dict[indice] = [template.format(label) for template in coop_template]
+                        category_dict[indice] = label
 
                 for datasetitem in tqdm(self._dataset):
                     try:
-                        if self._hash_type in ['img_txt', 'img_txt_prompt', 'img_txt_coop']:
+                        if self._hash_type in ['img_txt', 'img_txt_prompt']:
                             hash_key_img = hash_inference(datasetitem.media.data)[0]
                             prompt = category_dict.get(datasetitem.annotations[0].label)
                             if isinstance(prompt, List):
@@ -331,6 +350,13 @@ class Prune():
                             inputs = tokenize(prompt)
                             hash_key_txt = hash_inference_text(inputs)[0]
                             hash_key = np.concatenate([hash_key_img, hash_key_txt])
+
+                        if self._hash_type in ['img_txt_coop']:
+                            hash_key_img = hash_inference(datasetitem.media.data)[0]
+                            prompt = category_dict.get(datasetitem.annotations[0].label)
+                            inputs = tokenize(prompt)
+                            hash_key_txt = hash_inference_text(inputs)[0]
+                            hash_key = np.concatenate([hash_key_img, np.reshape(coop_hash(hash_key_txt), -1)])
                         else:
                             hash_key = hash_inference(datasetitem.media.data)[0]
                         hash_key = np.unpackbits(hash_key, axis=-1)
@@ -351,15 +377,17 @@ class Prune():
 
         self._database_keys = database_keys
         self._item_list = item_list
+        self._labels = labels
         self._exception_items = exception_items
 
 
     def get_pruned(self) -> None:
+        dataset_len = len(self._item_list)
+
         if self._cluster_method == 'random':
             for i, ratio in enumerate(self._ratio_list):
                 self._ratio = ratio
-
-                dataset_len = len(self._item_list)
+        
                 removed_items = []
                 num_selected_item = math.ceil(dataset_len*self._ratio)
                 random_list = random.sample(range(dataset_len), num_selected_item)
@@ -386,24 +414,14 @@ class Prune():
             self._ratio = ratio
 
             if self._cluster_method == 'centroid':
-                num_centers = math.ceil(len(self._database_keys)*self._ratio)
-                kmeans = KMeans(n_clusters=num_centers, random_state=0)
+                self._num_centers = math.ceil(len(self._database_keys)*self._ratio)
+                kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
 
-            elif self._cluster_method in ['prune_close', 'clustered_random']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
-                    for category in self._dataset.categories().values():
-                        if isinstance(category, LabelCategories):
-                            num_centers = len(list(category._indices.keys()))
-                else:
-                    num_centers = len(self._dataset.subsets())
-                kmeans = KMeans(n_clusters=num_centers, random_state=0)
+            elif self._cluster_method in ['prune_close', 'clustered_random', 'cls_hist', 'entropy']:
+                kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
 
-            elif self._cluster_method == 'img_query_clust':
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
-                    for category in self._dataset.categories().values():
-                        if isinstance(category, LabelCategories):
-                            num_centers = len(list(category._indices.keys()))
-                center_dict = {i: [] for i in range(num_centers)}
+            elif self._cluster_method  == 'query_clust':
+                center_dict = {i: [] for i in range(self._num_centers)}
                 temp_dataset = self._dataset
                 for item in temp_dataset:
                     for anno in item.annotations:
@@ -413,86 +431,119 @@ class Prune():
                                 center_dict[label_] = item
                     if all(center_dict.values()):
                         break
-                centroids = [self._database_keys[self._item_list.index(
-                    i)] for i in list(center_dict.values())]
-                kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
+                centroids = [self._database_keys[self._item_list.index(i)] for i in list(center_dict.values())]
+                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
 
             elif self._cluster_method == 'txt_query_clust':
                 if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
                     for category in self._dataset.categories().values():
                         if isinstance(category, LabelCategories):
                             labels = list(category._indices.keys())
-                            num_centers = len(labels)
                 centroids = []
                 for label in labels:
-                    prompt = "a photo of {}".format(label)
+                    prompt = "a photo of a {}".format(label)
                     inputs = tokenize(prompt)
                     hash_key = hash_inference_text(inputs)[0]
                     hash_key = np.unpackbits(hash_key, axis=-1)
                     centroids.append(hash_key)
 
-                kmeans = KMeans(n_clusters=num_centers,init=centroids, random_state=0)
+                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
 
-            elif self._cluster_method in ['img_txt_query_clust', 'img_txt_prompt_query_clust', 'img_txt_coop_query_clust']:
-                if self._data_name in ['coco', 'bccd', 'pcd', 'cifar10', 'cifar100', 'svhn', 'caltech101', 'lgchem', 'food101']:
-                    for category in self._dataset.categories().values():
-                        if isinstance(category, LabelCategories):
-                            num_centers = len(list(category._indices.keys()))
-                center_dict = {i: [] for i in range(num_centers)}
+            elif self._cluster_method == 'query_avg_clust':
+                center_dict = {i: [] for i in range(self._num_centers)}
+                items_per_label_dict = {i: None for i in range(self._num_centers)}
                 temp_dataset = self._dataset
-                label_hash = []
                 for item in temp_dataset:
                     for anno in item.annotations:
                         if isinstance(anno, Label):
                             label_ = anno.label
-                            if not center_dict.get(label_):
-                                center_dict[label_] = item
-                            if self._cluster_method == 'img_txt_query_clust':
-                                prompt = "a photo of {}".format(label_)
-                            elif self._cluster_method == 'img_txt_coop_query_clust':
-                                prompt = [template.format(label_) for template in coop_template]
-                                prompt = (" ").join(prompt)
+                            if items_per_label_dict.get(label_) is None:
+                                items_per_label_dict[label_] = self._database_keys[self._item_list.index(item)]
                             else:
-                                if self._data_name == 'cifar10':
-                                    prompt = [template.format(label_) for template in cifar10_templates]
-                                elif self._data_name == 'cifar100':
-                                    prompt = [template.format(label_) for template in cifar100_templates]
-                                elif self._data_name == 'caltech101':
-                                    prompt = [template.format(label_) for template in caltech101_templates]
-                                elif self._data_name == 'lgchem':
-                                    prompt = [template.format(label_) for template in lgchem_templates]
-                                elif self._data_name == 'svhn':
-                                    prompt = [template.format(label_) for template in svhn_templates]
-                                elif self._data_name == 'food101':
-                                    prompt = [template.format(label_) for template in food101_templates]
-                                prompt = (" ").join(prompt)
-                            inputs = tokenize(prompt)
-                            hash_key = hash_inference_text(inputs)[0]
-                            hash_key = np.unpackbits(hash_key, axis=-1)
-                            label_hash.append(hash_key)
-                    if all(center_dict.values()):
-                        break
-                centroids = [self._database_keys[self._item_list.index(i)] for i in list(center_dict.values())]
-                kmeans = KMeans(n_clusters=num_centers, init=centroids, random_state=0)
+                                items_per_label_dict[label_] = np.vstack((items_per_label_dict.get(label_), self._database_keys[self._item_list.index(item)]))
+                for label, hashes in items_per_label_dict.items():
+                    center_key = np.mean(hashes, axis=0)
+                    center_dict[label] = center_key
+                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=list(center_dict.values()), random_state=0)
 
             clusters = kmeans.fit_predict(self._database_keys)
             cluster_centers = kmeans.cluster_centers_
 
+            total_num_selected_item = math.ceil(dataset_len*self._ratio)
+            cluster_ids, cluster_num_item_list = np.unique(clusters, return_counts=True)
+
+            # match num item for each cluster
+            cluster_num_item_list = [float(i)/sum(cluster_num_item_list)*total_num_selected_item for i in cluster_num_item_list]
+            norm_cluster_num_item_list = [int(np.round(i)) for i in cluster_num_item_list]
+            zero_cluster_indexes = list(np.where(np.array(norm_cluster_num_item_list) == 0)[0])
+            add_clust_dist = np.sort(np.array(cluster_num_item_list)[zero_cluster_indexes])[::-1][:total_num_selected_item-sum(norm_cluster_num_item_list),]
+            for dist in set(add_clust_dist):
+                indices = [i for i, x in enumerate(cluster_num_item_list) if x == dist]
+                for index in indices:
+                    norm_cluster_num_item_list[index] += 1
+            if total_num_selected_item > sum(norm_cluster_num_item_list):
+                diff_num_item_list = np.argsort(np.array([x-norm_cluster_num_item_list[i] for i, x in enumerate(cluster_num_item_list)]))[::-1]
+                for diff_idx in diff_num_item_list[:total_num_selected_item-sum(norm_cluster_num_item_list)]:
+                    norm_cluster_num_item_list[diff_idx] += 1
+            elif total_num_selected_item < sum(norm_cluster_num_item_list):
+                diff_num_item_list = np.argsort(np.array([x-norm_cluster_num_item_list[i] for i, x in enumerate(cluster_num_item_list)]))
+                for diff_idx in diff_num_item_list[:sum(norm_cluster_num_item_list)-total_num_selected_item]:
+                    norm_cluster_num_item_list[diff_idx] -= 1
+
             removed_items = []
-            for cluster in range(num_centers):
-                cluster_center = cluster_centers[cluster]
-                cluster_items_idx = np.where(clusters == cluster)[0]
+            selected_item_indexs = []
+            for cluster_id in cluster_ids:
+                cluster_center = cluster_centers[cluster_id]
+                cluster_items_idx = np.where(clusters == cluster_id)[0]
                 if self._cluster_method == 'centroid':
                     num_selected_item = 1
-                elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_coop_query_clust', 'img_txt_query_clust', 'img_txt_prompt_query_clust']:
-                    num_items = len(cluster_items_idx)
-                    # num_selected_item = math.ceil(num_items*self._ratio)
-                    num_selected_item = int(np.round(num_items*self._ratio))
+                # elif self._cluster_method in ['prune_close', 'clustered_random', 'img_query_clust', 'txt_query_clust',  'img_txt_coop_query_clust', 'img_txt_query_clust', 'img_txt_prompt_query_clust']:
+                else:
+                    # num_items = len(cluster_items_idx)
+                    # # num_selected_item = math.ceil(num_items*self._ratio)
+                    # num_selected_item = int(np.round(num_items*self._ratio))
+                    num_selected_item = norm_cluster_num_item_list[cluster_id]
 
                 if self._cluster_method == 'clustered_random':
                     random.shuffle(cluster_items_idx)
                     for idx in cluster_items_idx[num_selected_item:]:
                         removed_items.append(self._item_list[idx])
+                elif self._cluster_method == 'cls_hist':
+                    cluster_items = self._database_keys[cluster_items_idx, ]
+                    dist = np.linalg.norm(cluster_center-cluster_items, axis=-1)
+                    ind = np.argsort(dist)
+                    clustered_item_list = cluster_items_idx[ind]
+                    n, _, _ = plt.hist(dist)
+                    sum_n = 0
+                    max_index = None
+                    if sum([int(np.round(i*ratio)) for i in n]) == 0:
+                        max_index = n.argmax()
+                    for j, n_ in enumerate((n)):
+                        n_ = int(n_)
+                        n_list = clustered_item_list[sum_n:sum_n+n_,]
+                        # num_selected_item = math.ceil(n_*ratio)
+                        num_selected_item = int(np.round(n_*ratio))
+                        if max_index and j == max_index:
+                            num_selected_item = 1
+                        random.seed(0)
+                        selected_items = random.sample(n_list.tolist(), num_selected_item)
+                        sum_n += n_
+                        for selected_item in selected_items:
+                            selected_item_indexs.append(selected_item)
+                elif self._cluster_method == 'entropy':
+                    cltr_classes = np.array(self._labels)[cluster_items_idx]
+                    _, unique_inverse, unique_counts = np.unique(cltr_classes, return_counts=True, return_inverse=True)
+
+                    weights = 1/unique_counts
+                    probs = weights[unique_inverse]
+                    probs = probs/probs.sum()
+                    
+                    choices = np.random.choice(range(len(unique_inverse)), size=num_selected_item, p=probs, replace=False)
+                    assert len(choices) == num_selected_item
+                    assert len(np.unique(choices)) == len(choices)
+                    selected_item_indexs += [cluster_items_idx[choices]]
+
+
                 else:
                     cluster_items = self._database_keys[cluster_items_idx, ]
                     dist = calculate_hamming(cluster_center, cluster_items)
@@ -500,6 +551,26 @@ class Prune():
                     item_list = cluster_items_idx[ind]
                     for idx in item_list[num_selected_item:]:
                         removed_items.append(self._item_list[idx])
+
+            if self._cluster_method == 'cls_hist':
+                dataset_len = len(self._item_list)
+                removed_items_index = list(range(dataset_len))
+                for idx in selected_item_indexs:
+                    removed_items_index.remove(idx)
+                for idx in removed_items_index:
+                    removed_items.append(self._item_list[idx])
+            elif self._cluster_method == 'entropy':
+                selected_item_indexs = np.concatenate(selected_item_indexs)
+                assert len(selected_item_indexs) == len(np.unique(selected_item_indexs))
+                np.random.shuffle(selected_item_indexs)
+                selected_item_indexs = selected_item_indexs[:total_num_selected_item]
+
+                dataset_len = len(self._item_list)
+                removed_items_index = list(range(dataset_len))
+                for idx in selected_item_indexs:
+                    removed_items_index.remove(idx)
+                for idx in removed_items_index:
+                    removed_items.append(self._item_list[idx])
 
             if i == 0:
                 removed_items_1 = removed_items
