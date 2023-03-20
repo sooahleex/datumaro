@@ -385,7 +385,7 @@ class Prune():
         dataset_len = len(self._item_list)
 
         if self._cluster_method == 'random':
-            for i, ratio in enumerate(self._ratio_list):
+            for r_idx, ratio in enumerate(self._ratio_list):
                 self._ratio = ratio
         
                 removed_items = []
@@ -396,21 +396,21 @@ class Prune():
                     removed_items.remove(idx)
                 removed_items = (np.array(self._item_list)[removed_items]).tolist()
 
-                if i == 0:
+                if r_idx == 0:
                     removed_items_1 = removed_items
-                elif i == 1:
+                elif r_idx == 1:
                     removed_items_2 = removed_items
-                elif i == 2:
+                elif r_idx == 2:
                     removed_items_3 = removed_items
-                elif i == 3:
+                elif r_idx == 3:
                     removed_items_4 = removed_items
-                elif i == 4:
+                elif r_idx == 4:
                     removed_items_5 = removed_items
-                elif i == 5:
+                elif r_idx == 5:
                     removed_items_6 = removed_items
             return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
 
-        for i, ratio in enumerate(self._ratio_list):
+        for r_idx, ratio in enumerate(self._ratio_list):
             self._ratio = ratio
 
             if self._cluster_method == 'centroid':
@@ -551,11 +551,11 @@ class Prune():
                     item_indices = cluster_items_idx[ind]
                     if num_selected_item > 1:
                         # select nearest one for center of cluster
-                        selected_item_indexs.append(item_indices[0])
+                        # selected_item_indexs.append(item_indices[0])
                         # select nearest items for center of close cluster
-                        for idx in item_indices_btw_near_c[:num_selected_item-1]:
-                            selected_item_indexs.append(idx)
+                        selected_item_indexs.extend(item_indices_btw_near_c[:num_selected_item])
                     elif num_selected_item == 1:
+                        # select nearest one for center of cluster
                         selected_item_indexs.append(item_indices[0])
 
                 elif self._cluster_method == 'center_dist_multi':
@@ -574,7 +574,7 @@ class Prune():
                         ind_btw_near_c = np.argsort(dist_btw_near_c)
                         item_indices_btw_near_c = cluster_items_idx[ind_btw_near_c]
                         near_item_for_clust_dict[c_dist_indice] = item_indices_btw_near_c
-                    
+
                     item_idx = 0
                     if num_selected_item > 0:
                         for i, (c_indice, item_indices_btw_near_c) in enumerate(near_item_for_clust_dict.items()):
@@ -584,16 +584,19 @@ class Prune():
                                 break
                             else:
                                 # select nearest one for center of cluster
-                                selected_item_indexs_for_c.append(item_indices[0])
+                                if i == 0 and item_idx == 0:
+                                    selected_item_indexs_for_c.append(item_indices[0])
                                 if len(selected_item_indexs_for_c) == num_selected_item:
                                     break
-                                selected_item_indexs_for_c.append(item_indices_btw_near_c[item_idx])
+                                if item_indices_btw_near_c[item_idx] not in selected_item_indexs_for_c:
+                                    selected_item_indexs_for_c.append(item_indices_btw_near_c[item_idx])
+                                else:
+                                    print(1)
                                 if c_indice == len(cluster_centers):
                                     item_idx += 1
                                 if len(selected_item_indexs_for_c) == num_selected_item:
                                     break
                     selected_item_indexs.extend(selected_item_indexs_for_c)
-
                 else:
                     cluster_items = self._database_keys[cluster_items_idx, ]
                     dist = calculate_hamming(cluster_center, cluster_items)
@@ -622,17 +625,17 @@ class Prune():
                 for idx in removed_items_index:
                     removed_items.append(self._item_list[idx])
 
-            if i == 0:
+            if r_idx == 0:
                 removed_items_1 = removed_items
-            elif i == 1:
+            elif r_idx == 1:
                 removed_items_2 = removed_items
-            elif i == 2:
+            elif r_idx == 2:
                 removed_items_3 = removed_items
-            elif i == 3:
+            elif r_idx == 3:
                 removed_items_4 = removed_items
-            elif i == 4:
+            elif r_idx == 4:
                 removed_items_5 = removed_items
-            elif i == 5:
+            elif r_idx == 5:
                 removed_items_6 = removed_items
 
         return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6

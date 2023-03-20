@@ -21,17 +21,17 @@ data_name = 'caltech101'
 dataset = dm.Dataset.import_from(dataset_path_dict[data_name], format=dataset_format_dict[data_name])
 print(f'{data_name} dataset len : ', len(dataset))
 
-hash_base_model = 'effb0_init' # clip, effb0_trained, effb0_init
+hash_base_model = 'clip' # clip, effb0_trained, effb0_init
 print('---- hash_base_model : ', hash_base_model)
 
 # random, clustered_random, centroid, 
 # img_query_clust, txt_query_clust, img_txt_query_clust, img_txt_prompt_query_clust, img_txt_coop_query_clust
 # query_avg_clust, query_clust
 # cls_hist, entropy, center_dist_one, center_dist_multi
-cluster_method = 'center_dist_one'
+cluster_method = 'center_dist_multi'
 print('---- cluster_method : ', cluster_method)
 
-hash_type = 'img' # img_txt, txt, img, img_txt_prompt, img_txt_coop
+hash_type = 'img_txt' # img_txt, txt, img, img_txt_prompt, img_txt_coop
 print('---- hashing_type : ', hash_type)
 
 Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
