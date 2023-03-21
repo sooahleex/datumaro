@@ -638,4 +638,5 @@ class Prune():
             elif r_idx == 5:
                 removed_items_6 = removed_items
 
-        return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
+        # return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
+        return removed_items_1

@@ -119,16 +119,16 @@ def get_efficientnet(
         in_size=in_size,
         **kwargs,
     )
-    # model_path = './model_paths/efficientnet_b0_imagenet_cls.pth'
-    # model_dict = torch.load(model_path, map_location='cpu')
-    # model_dict.pop('output.fc.weight', None)
-    # model_dict.pop('output.fc.bias', None)
+    model_path = './model_paths/efficientnet_b0_imagenet_cls.pth'
+    model_dict = torch.load(model_path, map_location='cpu')
+    model_dict.pop('output.fc.weight', None)
+    model_dict.pop('output.fc.bias', None)
 
     # model_path = './caltech101_effb0_100_trained.pth'
-    model_path = './model_paths/food101_effb0_100_trained.pth'
-    model_dict = torch.load(model_path, map_location='cpu')['model']['state_dict']
-    model_dict.pop('output.asl.weight', None)
-    model_dict.pop('output.asl.bias', None)
+    # model_path = './model_paths/food101_effb0_100_trained.pth'
+    # model_dict = torch.load(model_path, map_location='cpu')['model']['state_dict']
+    # model_dict.pop('output.asl.weight', None)
+    # model_dict.pop('output.asl.bias', None)
 
     print(f'load model path : {model_path}.....')
     net.load_state_dict(model_dict, device)
