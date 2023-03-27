@@ -32,6 +32,8 @@ def round_channels(channels, divisor=8):
     return rounded_channels
 
 def get_efficientnet(
+    data_type,
+    train_type,
     version,
     in_size,
     tf_mode=False,
@@ -119,16 +121,26 @@ def get_efficientnet(
         in_size=in_size,
         **kwargs,
     )
-    model_path = './model_paths/efficientnet_b0_imagenet_cls.pth'
-    model_dict = torch.load(model_path, map_location='cpu')
-    model_dict.pop('output.fc.weight', None)
-    model_dict.pop('output.fc.bias', None)
 
-    # model_path = './caltech101_effb0_100_trained.pth'
-    # model_path = './model_paths/food101_effb0_100_trained.pth'
-    # model_dict = torch.load(model_path, map_location='cpu')['model']['state_dict']
-    # model_dict.pop('output.asl.weight', None)
-    # model_dict.pop('output.asl.bias', None)
+    if train_type == 'init':
+        model_path = './model_paths/efficientnet_b0_imagenet_cls.pth'
+        model_dict = torch.load(model_path, map_location='cpu')
+        model_dict.pop('output.fc.weight', None)
+        model_dict.pop('output.fc.bias', None)
+
+    else:
+        data_path_dict = {
+            'caltech101': './caltech101_effb0_100_trained.pth',
+            'svhn': './model_paths/svhn_effb0_100_trained.pth',
+            'food101': './model_paths/food101_effb0_100_trained.pth',
+            'cifar100': './model_paths/cifar100_effb0_100_trained.pth',
+            'cifar10': './model_paths/cifar10_effb0_100_trained.pth',
+            'eurosat': './model_paths/eurosat_effb0_trained.pth'
+        }
+        model_path = data_path_dict[data_type]
+        model_dict = torch.load(model_path, map_location='cpu')['model']['state_dict']
+        model_dict.pop('output.asl.weight', None)
+        model_dict.pop('output.asl.bias', None)
 
     print(f'load model path : {model_path}.....')
     net.load_state_dict(model_dict, device)
@@ -138,7 +150,7 @@ def get_efficientnet(
     return net
 
 
-def efficientnet_b0(in_size=(224, 224), **kwargs):
+def efficientnet_b0(data_type, train_type, in_size=(224, 224), **kwargs):
     """
     EfficientNet-B0 model from 'EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks,'
     https://arxiv.org/abs/1905.11946.
@@ -151,7 +163,7 @@ def efficientnet_b0(in_size=(224, 224), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(version="b0", in_size=in_size, model_name="efficientnet_b0", **kwargs)
+    return get_efficientnet(data_type, train_type, version="b0", in_size=in_size, model_name="efficientnet_b0", **kwargs)
 
 class hash(Function):
     @staticmethod
@@ -174,10 +186,10 @@ def encode_discrete(x):
     z = hash_layer(prob - 0.5)
     return z
 
-def effb0_infer(data):
+def effb0_infer(data, data_type, train_type):
     model = model_['effb0']
     if not model:
-        model = efficientnet_b0()
+        model = efficientnet_b0(data_type, train_type)
         model_['effb0'] = model
 
     trans = transforms.Compose(
@@ -218,14 +230,14 @@ def compute_hash(features):
     hash_key = np.packbits(hash_key, axis=-1)
     return hash_key
 
-def effb0_hash(dataset):
+def effb0_hash(dataset, data_type, train_type):
     database_features = None
     labels = []
     item_list = []
     database_hashes = None
     for datasetitem in tqdm(dataset):
         # hash_key = effb0_infer(datasetitem.media.data)[0].detach().numpy()
-        hash_key = effb0_infer(datasetitem.media.data)[0]
+        hash_key = effb0_infer(datasetitem.media.data, data_type, train_type)[0]
         hash_bit = compute_hash(hash_key)
         if database_features is None:
             database_features = hash_key.cpu().detach().numpy().reshape(1, -1)
@@ -239,4 +251,4 @@ def effb0_hash(dataset):
         item_list.append(datasetitem)
     labels = np.array(labels)
     # return database_features, database_hashes, labels, item_list
-    return database_hashes, labels, item_list
+    return database_features, database_hashes, labels, item_list
