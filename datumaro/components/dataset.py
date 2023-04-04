@@ -1265,8 +1265,7 @@ class Dataset(IDataset):
     def detect(path: str, *, env: Optional[Environment] = None, depth: int = 2) -> str:
         """
         Attempts to detect dataset format of a given directory.
-
-        This function tries to detect a single format and fails if it's not
+rrrrrrrrrrrrrre       This function tries to detect a single format and fails if it's not
         possible. Check Environment.detect_dataset() for a function that
         reports status for each format checked.
 
