@@ -36,23 +36,33 @@ print('---- hash_base_model : ', hash_base_model)
 hash_type = 'img' # img_txt, txt, img, img_txt_prompt, img_txt_coop
 print('---- hashing_type : ', hash_type)
 
+sep_type = 'ratio' # ratio, kshot
+print(f'---- seperation type : {sep_type} (among ratio, kshot)')
+random_status = 'random_free' # random_fix, random_free
+print(f'---- random type : {random_status} (among random_fix, random_free)')
+
 # Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
 # removed_items_1, removed_items_5, removed_items_10, removed_items_20, removed_items_50, removed_items_80 = Pruner.get_pruned()
 
 # Pruner = Prune(dataset, ratio_list=[0.01], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
 # removed_items_1 = Pruner.get_pruned()
 
-# version='2'
+version='1'
 # for cluster_method in ['query_clust']:
 # for cluster_method in ['centroid', 'query_clust', 'query_avg_clust', 'query_txt_clust', 'entropy', 'center_dist_one', 'query_txt_clust_center_dist_one', 'query_txt_clust_entropy']:
 for cluster_method in ['clustered_random', 'centroid', 'query_clust', 'query_avg_clust', 'query_txt_clust', 'entropy', 'center_dist_one', 'query_txt_clust_center_dist_one', 'query_txt_clust_entropy']:
     print('---- cluster_method : ', cluster_method)
     # Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2, 0.5, 0.8], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
     # removed_items_1, removed_items_5, removed_items_10, removed_items_20, removed_items_50, removed_items_80 = Pruner.get_pruned()
-    Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model)
-    removed_items_1, removed_items_5, removed_items_10, removed_items_20 = Pruner.get_pruned()
+    Pruner = Prune(dataset, ratio_list=[0.01, 0.05, 0.1, 0.2], cluster_method=cluster_method, data_name=data_name, hash_type=hash_type, hash_base_model=hash_base_model,)
+    removed_items_1, removed_items_5, removed_items_10, removed_items_20 = Pruner.get_pruned( random_status=random_status, sep_type=sep_type)
     print(f'exception items number : {len(Pruner._exception_items)}')
-
+    
+    postfix=f'v{version}' 
+    if random_status == 'random_free':
+        postfix = postfix+'_r'
+    elif sep_type == 'kshot':
+        postfix = '101'+postfix
 
 ###### 0.01
     dataset_1 = copy.deepcopy(dataset)
@@ -72,8 +82,8 @@ for cluster_method in ['clustered_random', 'centroid', 'query_clust', 'query_avg
     print(f'{n} data removed')
 
     print(f'{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method} saved.....')
-    # dataset_1.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}_v{version}_r', 'imagenet', save_images=True)
-    dataset_1.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}_101', 'imagenet', save_images=True)
+    dataset_1.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}_{postfix}', 'imagenet', save_images=True)
+    # dataset_1.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_1_{cluster_method}_101', 'imagenet', save_images=True)
 
     # ###### 0.05
     dataset_5 = copy.deepcopy(dataset)
@@ -93,8 +103,8 @@ for cluster_method in ['clustered_random', 'centroid', 'query_clust', 'query_avg
     print(f'{n} data removed')
 
     print(f'{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method} saved.....')
-    # dataset_5.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}_v{version}_r', 'imagenet', save_images=True)
-    dataset_5.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}_101', 'imagenet', save_images=True)
+    dataset_5.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}_{postfix}', 'imagenet', save_images=True)
+    # dataset_5.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_5_{cluster_method}_101', 'imagenet', save_images=True)
 
     # ###### 0.1
     dataset_10 = copy.deepcopy(dataset)
@@ -114,8 +124,8 @@ for cluster_method in ['clustered_random', 'centroid', 'query_clust', 'query_avg
     print(f'{n} data removed')
 
     print(f'{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method} saved......')
-    # dataset_10.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}_v{version}_r', 'imagenet', save_images=True)
-    dataset_10.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}_101', 'imagenet', save_images=True)
+    dataset_10.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_10_{cluster_method}_{postfix}', 'imagenet', save_images=True)
+    # dataset_10.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{has0h_type}_10_{cluster_method}_101', 'imagenet', save_images=True)
 
     # ###### 0.2
     dataset_20 = copy.deepcopy(dataset)
@@ -135,8 +145,8 @@ for cluster_method in ['clustered_random', 'centroid', 'query_clust', 'query_avg
     print(f'{n} data removed')
 
     print(f'{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method} saved......')
-    # dataset_20.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}_v{version}_r', 'imagenet', save_images=True)
-    dataset_20.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}_101', 'imagenet', save_images=True)
+    dataset_20.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}_{postfix}', 'imagenet', save_images=True)
+    # dataset_20.export(f'/media/hdd2/datumaro/prune_results/{data_name}/{hash_base_model}/{hash_type}/{data_name}_{hash_base_model}_{hash_type}_20_{cluster_method}_101', 'imagenet', save_images=True)
 
     # ###### 0.5
     # dataset_50 = copy.deepcopy(dataset)

@@ -1245,7 +1245,6 @@ class Dataset(IDataset):
                     extractors.append(
                         env.make_extractor(src_conf.format, src_conf.url, **extractor_kwargs)
                     )
-
             dataset = cls.from_extractors(*extractors, env=env, merge_policy=merge_policy)
             if eager:
                 dataset.init_cache()

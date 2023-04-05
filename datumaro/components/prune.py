@@ -203,7 +203,7 @@ def coop_hash(class_hash):
     )
     return text_hash
 
-# random.seed(0)
+
 
 class Prune:
     def __init__(
@@ -358,7 +358,10 @@ class Prune:
         self._labels = labels
         self._exception_items = exception_items
 
-    def get_pruned(self) -> None:
+    def get_pruned(self, random_status: str = 'random_fix', sep_type: str = 'ratio',) -> None:
+        if random_status == 'random_fix':
+            random.seed(0)
+    
         dataset_len = len(self._item_list)
 
         if self._cluster_method == "random":
@@ -366,8 +369,10 @@ class Prune:
                 self._ratio = ratio
 
                 removed_items = []
-                # num_selected_item = math.ceil(dataset_len * self._ratio)
-                num_selected_item = int(101 * self._ratio * 100)
+                if sep_type == 'ratio':
+                    num_selected_item = math.ceil(dataset_len * self._ratio)
+                elif sep_type == 'kshot':
+                    num_selected_item = int(101 * self._ratio * 100)
                 random_list = random.sample(range(dataset_len), num_selected_item)
                 removed_items = list(range(dataset_len))
                 for idx in random_list:
@@ -393,10 +398,15 @@ class Prune:
             self._ratio = ratio
 
             if self._cluster_method == "centroid":
-                # self._num_centers = math.ceil(len(self._database_keys) * self._ratio)
-                self._num_centers = int(101 * self._ratio * 100)
-                # kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
-                kmeans = KMeans(n_clusters=self._num_centers)
+                if sep_type == 'ratio':
+                    self._num_centers = math.ceil(len(self._database_keys) * self._ratio)
+                elif sep_type == 'kshot':
+                    self._num_centers = int(101 * self._ratio * 100)
+                
+                if random_status == 'random_fix':
+                    kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
+                else:
+                    kmeans = KMeans(n_clusters=self._num_centers)
 
             elif self._cluster_method in [
                 "prune_close",
@@ -406,8 +416,10 @@ class Prune:
                 "center_dist_one",
                 "center_dist_multi",
             ]:
-                # kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
-                kmeans = KMeans(n_clusters=self._num_centers)
+                if random_status == 'random_fix':
+                    kmeans = KMeans(n_clusters=self._num_centers, random_state=0)
+                else:
+                    kmeans = KMeans(n_clusters=self._num_centers)
 
             elif self._cluster_method == "query_clust":
                 center_dict = {i: [] for i in range(self._num_centers)}
@@ -428,8 +440,10 @@ class Prune:
                 item_id_list = [item.id for item in self._item_list]
                 for idx, i in enumerate(list(center_dict.values())):
                     centroids.append(self._database_keys[item_id_list.index(i.id)])
-                # kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
-                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids)
+                if random_status == 'random_fix':
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
+                else:
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids)
 
 
             elif self._cluster_method in ["query_txt_clust", "query_txt_clust_center_dist_one", "query_txt_clust_entropy"]:
@@ -456,8 +470,10 @@ class Prune:
                     hash_key = np.unpackbits(hash_key, axis=-1)
                     centroids.append(hash_key)
 
-                # kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
-                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids)
+                if random_status == 'random_fix':
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
+                else:
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids)
 
             elif self._cluster_method == "query_avg_clust":
                 center_dict = {i: [] for i in range(self._num_centers)}
@@ -482,75 +498,74 @@ class Prune:
                 for label, hashes in items_per_label_dict.items():
                     center_key = np.mean(hashes, axis=0)
                     center_dict[label] = center_key
-                # kmeans = KMeans(
-                #     n_clusters=self._num_centers,
-                #     n_init=1,
-                #     init=list(center_dict.values()),
-                #     random_state=0,
-                # )
-                kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=list(center_dict.values()))
+                if random_status == 'random_fix':
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=list(center_dict.values()), random_state=0,)
+                else:
+                    kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=list(center_dict.values()))
 
             clusters = kmeans.fit_predict(self._database_keys)
             cluster_centers = kmeans.cluster_centers_
             cluster_ids, cluster_num_item_list = np.unique(clusters, return_counts=True)
 
             ######### match num item for each cluster with labels num
-            if self._cluster_method != 'centroid':
-                total_num_selected_item = int(self._num_centers * self._ratio * 100)
-                norm_cluster_num_item_list = [int(self._ratio*100) for _ in range(self._num_centers)]
-                added_num = 0
-                for idx_clust, n_clust in enumerate(cluster_num_item_list):
-                    if n_clust < int(self._ratio*100):
-                        num_gap = int(self._ratio*100) - n_clust
-                        norm_cluster_num_item_list[idx_clust] = n_clust
-                        added_num += num_gap
-                sorted_cluster_num_item_list = np.argsort(cluster_num_item_list)[::-1]
-                for idx_clust in sorted_cluster_num_item_list[:added_num]:
-                    norm_cluster_num_item_list[idx_clust] += 1
-                    assert norm_cluster_num_item_list[idx_clust] <= cluster_num_item_list[idx_clust]
+            if sep_type == 'kshot':
+                if self._cluster_method != 'centroid':
+                    total_num_selected_item = int(self._num_centers * self._ratio * 100)
+                    norm_cluster_num_item_list = [int(self._ratio*100) for _ in range(self._num_centers)]
+                    added_num = 0
+                    for idx_clust, n_clust in enumerate(cluster_num_item_list):
+                        if n_clust < int(self._ratio*100):
+                            num_gap = int(self._ratio*100) - n_clust
+                            norm_cluster_num_item_list[idx_clust] = n_clust
+                            added_num += num_gap
+                    sorted_cluster_num_item_list = np.argsort(cluster_num_item_list)[::-1]
+                    for idx_clust in sorted_cluster_num_item_list[:added_num]:
+                        norm_cluster_num_item_list[idx_clust] += 1
+                        assert norm_cluster_num_item_list[idx_clust] <= cluster_num_item_list[idx_clust]
 
             ######### match num item for each cluster
-            # total_num_selected_item = math.ceil(dataset_len * self._ratio)
+            elif sep_type == 'ratio':
+                total_num_selected_item = math.ceil(dataset_len * self._ratio)
 
-            # cluster_num_item_list = [
-            #     float(i) / sum(cluster_num_item_list) * total_num_selected_item
-            #     for i in cluster_num_item_list
-            # ]
-            # norm_cluster_num_item_list = [int(np.round(i)) for i in cluster_num_item_list]
-            # zero_cluster_indexes = list(np.where(np.array(norm_cluster_num_item_list) == 0)[0])
-            # add_clust_dist = np.sort(np.array(cluster_num_item_list)[zero_cluster_indexes])[::-1][
-            #     : total_num_selected_item - sum(norm_cluster_num_item_list),
-            # ]
-            # for dist in set(add_clust_dist):
-            #     indices = [i for i, x in enumerate(cluster_num_item_list) if x == dist]
-            #     for index in indices:
-            #         norm_cluster_num_item_list[index] += 1
-            # if total_num_selected_item > sum(norm_cluster_num_item_list):
-            #     diff_num_item_list = np.argsort(
-            #         np.array(
-            #             [
-            #                 x - norm_cluster_num_item_list[i]
-            #                 for i, x in enumerate(cluster_num_item_list)
-            #             ]
-            #         )
-            #     )[::-1]
-            #     for diff_idx in diff_num_item_list[
-            #         : total_num_selected_item - sum(norm_cluster_num_item_list)
-            #     ]:
-            #         norm_cluster_num_item_list[diff_idx] += 1
-            # elif total_num_selected_item < sum(norm_cluster_num_item_list):
-            #     diff_num_item_list = np.argsort(
-            #         np.array(
-            #             [
-            #                 x - norm_cluster_num_item_list[i]
-            #                 for i, x in enumerate(cluster_num_item_list)
-            #             ]
-            #         )
-            #     )
-            #     for diff_idx in diff_num_item_list[
-            #         : sum(norm_cluster_num_item_list) - total_num_selected_item
-            #     ]:
-            #         norm_cluster_num_item_list[diff_idx] -= 1
+                cluster_num_item_list = [
+                    float(i) / sum(cluster_num_item_list) * total_num_selected_item
+                    for i in cluster_num_item_list
+                ]
+                norm_cluster_num_item_list = [int(np.round(i)) for i in cluster_num_item_list]
+                zero_cluster_indexes = list(np.where(np.array(norm_cluster_num_item_list) == 0)[0])
+                add_clust_dist = np.sort(np.array(cluster_num_item_list)[zero_cluster_indexes])[::-1][
+                    : total_num_selected_item - sum(norm_cluster_num_item_list),
+                ]
+                for dist in set(add_clust_dist):
+                    indices = [i for i, x in enumerate(cluster_num_item_list) if x == dist]
+                    for index in indices:
+                        norm_cluster_num_item_list[index] += 1
+                if total_num_selected_item > sum(norm_cluster_num_item_list):
+                    diff_num_item_list = np.argsort(
+                        np.array(
+                            [
+                                x - norm_cluster_num_item_list[i]
+                                for i, x in enumerate(cluster_num_item_list)
+                            ]
+                        )
+                    )[::-1]
+                    for diff_idx in diff_num_item_list[
+                        : total_num_selected_item - sum(norm_cluster_num_item_list)
+                    ]:
+                        norm_cluster_num_item_list[diff_idx] += 1
+                elif total_num_selected_item < sum(norm_cluster_num_item_list):
+                    diff_num_item_list = np.argsort(
+                        np.array(
+                            [
+                                x - norm_cluster_num_item_list[i]
+                                for i, x in enumerate(cluster_num_item_list)
+                            ]
+                        )
+                    )
+                    for diff_idx in diff_num_item_list[
+                        : sum(norm_cluster_num_item_list) - total_num_selected_item
+                    ]:
+                        norm_cluster_num_item_list[diff_idx] -= 1
 
             removed_items = []
             selected_item_indexs = []
