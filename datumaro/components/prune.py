@@ -437,9 +437,9 @@ class Prune:
                 #     for i in list(center_dict.values())
                 # ]
                 centroids = []
-                item_id_list = [item.id for item in self._item_list]
+                item_id_list = [item.id.split('/')[-1] for item in self._item_list]
                 for idx, i in enumerate(list(center_dict.values())):
-                    centroids.append(self._database_keys[item_id_list.index(i.id)])
+                    centroids.append(self._database_keys[item_id_list.index(i.id.split(':')[-1])])
                 if random_status == 'random_fix':
                     kmeans = KMeans(n_clusters=self._num_centers, n_init=1, init=centroids, random_state=0)
                 else:
@@ -479,20 +479,20 @@ class Prune:
                 center_dict = {i: [] for i in range(self._num_centers)}
                 items_per_label_dict = {i: None for i in range(self._num_centers)}
                 temp_dataset = self._dataset
-                item_id_list = [item.id for item in self._item_list]
+                item_id_list = [item.id.split('/')[-1] for item in self._item_list]
                 for item in temp_dataset:
                     for anno in item.annotations:
                         if isinstance(anno, Label):
                             label_ = anno.label
                             if items_per_label_dict.get(label_) is None:
                                 items_per_label_dict[label_] = self._database_keys[
-                                    item_id_list.index(item.id)
+                                    item_id_list.index(item.id.split(':')[-1])
                                 ]
                             else:
                                 items_per_label_dict[label_] = np.vstack(
                                     (
                                         items_per_label_dict.get(label_),
-                                        self._database_keys[item_id_list.index(item.id)],
+                                        self._database_keys[item_id_list.index(item.id.split(':')[-1])],
                                     )
                                 )
                 for label, hashes in items_per_label_dict.items():
@@ -732,5 +732,5 @@ class Prune:
                 removed_items_6 = removed_items
 
         # return removed_items_1, removed_items_2, removed_items_3, removed_items_4, removed_items_5, removed_items_6
-        return removed_items_1, removed_items_2, removed_items_3, removed_items_4
-        # return removed_items_1
+        # return removed_items_1, removed_items_2, removed_items_3, removed_items_4
+        return removed_items_1
