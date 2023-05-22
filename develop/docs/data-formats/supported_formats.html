@@ -50,7 +50,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Supported Media Formats" href="media_formats.html" />
-    <link rel="prev" title="Level 12: Pseudo Label Generation" href="../level-up/advanced_skills/12_pseudo_label_generation.html" />
+    <link rel="prev" title="Level 13: Pseudo Label Generation" href="../level-up/advanced_skills/13_pseudo_label_generation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -285,13 +285,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/06_data_comparison.html">Level 6: Data Comparison with Two Heterogeneous Datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/07_data_merge.html">Level 7: Merge Two Heterogeneous Datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/08_data_validate.html">Level 8: Dataset Validation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/09_data_exploration.html">Level 9: Dataset Explorartion from a Query Image/Text</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/10_data_generation.html">Level 10: Data Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/09_data_filtering.html">Level 9: Dataset Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/10_data_exploration.html">Level 10: Dataset Explorartion from a Query Image/Text</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../level-up/intermediate_skills/11_data_generation.html">Level 11: Data Generation</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../level-up/advanced_skills/index.html">Advanced Skills</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../level-up/advanced_skills/11_project_versioning.html">Level 11: Project Versioning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../level-up/advanced_skills/12_pseudo_label_generation.html">Level 12: Pseudo Label Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../level-up/advanced_skills/12_project_versioning.html">Level 12: Project Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../level-up/advanced_skills/13_pseudo_label_generation.html">Level 13: Pseudo Label Generation</a></li>
 </ul>
 </li>
 </ul>
@@ -486,6 +487,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/market1501.html">Market-1501</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mars.html">MARS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mnist.html">MNIST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mot.html">Multiple Object Tracking (MOT)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mots.html">Multiple Object Tracking and Segmentation (MOTS)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mpii_json.html">MPII Human Pose Dataset (JSON)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mpii.html">MPII Human Pose Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/formats/mvtec.html">MVTec AD</a></li>
@@ -722,12 +725,14 @@
 <ul>
 <li><p><a class="reference external" href="https://arxiv.org/pdf/1906.04567.pdf">Format specification</a></p></li>
 <li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/tree/develop/tests/assets/mot_dataset">Dataset example</a></p></li>
+<li><p><a class="reference internal" href="../explanation/formats/mot.html"><span class="doc std std-doc">Format documentation</span></a></p></li>
 </ul>
 </li>
 <li><p>MOTS (png)</p>
 <ul>
 <li><p><a class="reference external" href="https://www.vision.rwth-aachen.de/page/mots">Format specification</a></p></li>
 <li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/tree/develop/tests/assets/mots_dataset">Dataset example</a></p></li>
+<li><p><a class="reference internal" href="../explanation/formats/mots.html"><span class="doc std std-doc">Format documentation</span></a></p></li>
 </ul>
 </li>
 <li><p>MPII Human Pose Dataset (<code class="docutils literal notranslate"><span class="pre">detection</span></code>, <code class="docutils literal notranslate"><span class="pre">pose</span> <span class="pre">estimation</span></code>) (import-only)</p>
@@ -750,6 +755,13 @@
 <li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/tree/develop/tests/assets/coco_dataset">Dataset example</a></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code> are our extension - like <code class="docutils literal notranslate"><span class="pre">instances</span></code> with only <code class="docutils literal notranslate"><span class="pre">category_id</span></code></p></li>
 <li><p><a class="reference internal" href="../explanation/formats/coco.html"><span class="doc std std-doc">Format documentation</span></a></p></li>
+</ul>
+</li>
+<li><p>Roboflow COCO (import-only)</p>
+<ul>
+<li><p><a class="reference external" href="https://roboflow.com/formats/coco-json">Format specification</a></p></li>
+<li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/tree/develop/tests/assets/coco_dataset/coco_roboflow">Dataset example</a></p></li>
+<li><p><a class="reference internal" href="#../explanation/formats/coco#coco-from-roboflow"><span class="xref myst">Format documentation</span></a></p></li>
 </ul>
 </li>
 <li><p>NYU Depth Dataset V2 (<code class="docutils literal notranslate"><span class="pre">depth</span> <span class="pre">estimation</span></code>) (import-only)</p>
@@ -887,11 +899,11 @@ This is only necessary for the segmentation task.</p></li>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="../level-up/advanced_skills/12_pseudo_label_generation.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="../level-up/advanced_skills/13_pseudo_label_generation.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Level 12: Pseudo Label Generation</p>
+          <p class="prev-next-title">Level 13: Pseudo Label Generation</p>
       </div>
   </a>
   <a class='right-next' id="next-link" href="media_formats.html" title="next page">
