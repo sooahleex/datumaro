@@ -22,7 +22,6 @@ from datumaro.components.algorithms.hash_key_inference.hashkey_util import (
 from datumaro.components.annotation import AnnotationType, HashKey, Label, LabelCategories
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import DatasetItem
-from datumaro.plugins.validators import ClassificationValidator
 
 
 def match_num_item_for_cluster(ratio, dataset_len, cluster_num_item_list):
@@ -242,6 +241,7 @@ class NDRSelect(PruneBase):
 
         return selected_items, None
 
+
 class UnderSampling(PruneBase):
     """
     Select items randomly from the dataset.
@@ -258,61 +258,23 @@ class UnderSampling(PruneBase):
                     item_dict_for_label[label_catetories[ann.label].name].append(item)
 
         label_stats_values = [len(items) for items in item_dict_for_label.values()]
-        label_value_avg = int(sum(label_stats_values)/len(label_stats_values))
-        label_value_var = sum([((x - label_value_avg) ** 2) for x in label_stats_values]) / len(label_stats_values)
-        label_value_res = int(label_value_var ** 0.5)
+        label_value_avg = int(sum(label_stats_values) / len(label_stats_values))
+        label_value_var = sum([((x - label_value_avg) ** 2) for x in label_stats_values]) / len(
+            label_stats_values
+        )
+        label_value_res = int(label_value_var**0.5)
 
         selected_items = []
         for items in item_dict_for_label.values():
-            if len(items) > label_value_avg+label_value_res:
+            if len(items) > label_value_avg + label_value_res:
                 random.shuffle(items)
-                cut_len = min(len(items), label_value_avg+label_value_res)
+                cut_len = min(len(items), label_value_avg + label_value_res)
                 selected_items.extend(items[:cut_len])
             else:
                 selected_items.extend(items)
 
-        # def normalize_stat(stats, desired_sum):
-        #     current_sum = sum(stats.values())
-        #     desired_sum_ratios = [num / current_sum for num in stats.values()]
-        #     scaled_values = [ratio * desired_sum for ratio in desired_sum_ratios]
-        #     undersampled_values = [round(value) for value in scaled_values]
-
-        #     remaining_difference = desired_sum - sum(undersampled_values)
-        #     adjustment_ratio = remaining_difference / len(undersampled_values)
-        #     normalized_values = [int(value + adjustment_ratio) for value in undersampled_values]
-        #     stats_norm = {k: v for k, v in zip(stats.keys(), normalized_values)}
-
-        #     return stats_norm
-
-        # def normalize_stat(stats, desired_sum):
-        #     numbers = list(stats.values())
-        #     current_sum = sum(numbers)
-        #     ratios = [num / current_sum for num in numbers]
-        #     scaled_values = [int(ratio * desired_sum) for ratio in ratios]
-        #     remaining_difference = desired_sum - sum(scaled_values)
-            
-        #     while remaining_difference > 0:
-        #         index = random.randint(0, len(numbers) - 1)
-        #         if scaled_values[index] < numbers[index]:
-        #             scaled_values[index] += 1
-        #             remaining_difference -= 1
-            
-        #     while remaining_difference < 0:
-        #         index = random.randint(0, len(numbers) - 1)
-        #         if scaled_values[index] > 0:
-        #             scaled_values[index] -= 1
-        #             remaining_difference += 1
-        #     stats_norm = {k: v for k, v in zip(stats.keys(), scaled_values)}
-        #     return stats_norm
-
-        # label_norm = normalize_stat(label_stats, num_selected_item)
-
-        # selected_items = []
-        # for label_, items in item_dict_for_label.items():
-        #     random.shuffle(items)
-        #     selected_items.extend(items[:label_norm[label_]])
-
         return selected_items, None
+
 
 class Prune(HashInference):
     def __init__(

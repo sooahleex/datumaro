@@ -314,18 +314,18 @@ class PruneTest:
     def test_prune_undersampling(self, fxt_imagenet_imbalanced_dataset, test_dir):
         """
         <b>Description:</b>
-        Check that pruned subset with ndr.
+        Check that pruned subset with undersampling.
 
         <b>Input data:</b>
-        Dataset with train and test subset that each datasetitem consists of same images.
+        Dataset with label0, label1, label2 that each datasetitem consists of same images.
 
         <b>Expected results:</b>
-        Pruned dataset that each subset contains one datasetitem.
+        Pruned dataset that each label balanced.
 
         <b>Steps</b>
-        1. Prepare dataset with each subset contains same images.
+        1. Prepare dataset with each label contains same images.
         2. Set Prune and try get_pruned set method as ndr to extract representative subset.
-        3. Check whether each subset contains one datasetitem.
+        3. Check whether undersampled dataset is matched with expected.
         """
         converter = partial(ImagenetExporter.convert, save_media=True)
         converter(fxt_imagenet_imbalanced_dataset, test_dir)
@@ -333,5 +333,5 @@ class PruneTest:
         prune = Prune(imported_dataset, cluster_method="undersampling")
 
         result = prune.get_pruned()
-        result_id = [item.id.split(':')[0] for item in result]
-        assert Counter(result_id) == {"label_0": 4, "label_1": 3, "label_2":1}
+        result_id = [item.id.split(":")[0] for item in result]
+        assert Counter(result_id) == {"label_0": 4, "label_1": 3, "label_2": 1}
