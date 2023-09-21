@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>datumaro.plugins.data_formats.arrow.exporter &#8212; Datumaro 1.4.1 documentation</title>
+    <title>datumaro.plugins.data_formats.arrow.exporter &#8212; Datumaro 1.6.0rc0 documentation</title>
   
   
   
@@ -567,6 +567,7 @@
             <span class="n">save_media</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_save_media</span><span class="p">,</span>
             <span class="n">images_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">pcd_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">video_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">crypter</span><span class="o">=</span><span class="n">NULL_CRYPTER</span><span class="p">,</span>
             <span class="n">image_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_ext</span><span class="p">,</span>
             <span class="n">default_image_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_image_ext</span><span class="p">,</span>
@@ -643,7 +644,6 @@
         <span class="n">extractor</span><span class="p">:</span> <span class="n">IDataset</span><span class="p">,</span>
         <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">save_images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Deprecated</span>
         <span class="n">save_media</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">image_ext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">default_image_ext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -658,7 +658,6 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">,</span>
             <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
-            <span class="n">save_images</span><span class="o">=</span><span class="n">save_images</span><span class="p">,</span>
             <span class="n">save_media</span><span class="o">=</span><span class="n">save_media</span><span class="p">,</span>
             <span class="n">image_ext</span><span class="o">=</span><span class="n">image_ext</span><span class="p">,</span>
             <span class="n">default_image_ext</span><span class="o">=</span><span class="n">default_image_ext</span><span class="p">,</span>

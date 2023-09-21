@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>datumaro.plugins.data_formats.tf_detection_api.base &#8212; Datumaro 1.4.1 documentation</title>
+    <title>datumaro.plugins.data_formats.tf_detection_api.base &#8212; Datumaro 1.6.0rc0 documentation</title>
   
   
   
@@ -322,6 +322,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/kinetics.html">Kinetics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/kitti.html">KITTI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/kitti_raw.html">Velodyne Points / KITTI Raw 3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/labelme.html">LabelMe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/lfw.html">LFW</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/mapillary_vistas.html">Mapillary Vistas</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/market1501.html">Market-1501</a></li>
@@ -335,6 +336,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/nyu_depth_v2.html">NYU Depth Dataset V2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/open_images.html">Open Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/pascal_voc.html">Pascal VOC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/roboflow.html">Roboflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/segment_anything.html">Segment Anything</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/sly_pointcloud.html">Supervisely Point Cloud</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../data-formats/formats/synthia.html">SYNTHIA</a></li>
@@ -381,6 +383,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../jupyter_notebook_examples/transform.html">Transform</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../jupyter_notebook_examples/notebooks/05_transform.html">Transform Dataset: Re-id, Reindexing, Remapping, etc.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../jupyter_notebook_examples/notebooks/06_tiling.html">Tile your Dataset to Cope with High-Resolution Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../jupyter_notebook_examples/notebooks/18_bbox_to_instance_mask_using_sam.html">Transform bounding box to instance mask annotations using Segment Anything Model</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../jupyter_notebook_examples/e2e_example.html">From Datumaro to Model Training</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -478,12 +481,15 @@
 <li class="toctree-l3"><a class="reference internal" href="datumaro.ops.html">datumaro.ops</a></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="datumaro.plugins.html">datumaro.plugins</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.accuracy_checker_plugin.html">datumaro.plugins.accuracy_checker_plugin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.configurable_validator.html">datumaro.plugins.configurable_validator</a></li>
 <li class="toctree-l4 current active"><a class="reference internal" href="datumaro.plugins.data_formats.html">datumaro.plugins.data_formats</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.explorer.html">datumaro.plugins.explorer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.framework_converter.html">datumaro.plugins.framework_converter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.inference_server_plugin.html">datumaro.plugins.inference_server_plugin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.missing_annotation_detection.html">datumaro.plugins.missing_annotation_detection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.ndr.html">datumaro.plugins.ndr</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.openvino_plugin.html">datumaro.plugins.openvino_plugin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.sam_transforms.html">datumaro.plugins.sam_transforms</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.sampler.html">datumaro.plugins.sampler</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.specs.html">datumaro.plugins.specs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.plugins.splitter.html">datumaro.plugins.splitter</a></li>
@@ -494,6 +500,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="datumaro.project.html">datumaro.project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="datumaro.rust_api.html">datumaro.rust_api</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="datumaro.util.html">datumaro.util</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.annotation_util.html">datumaro.util.annotation_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.attrs_util.html">datumaro.util.attrs_util</a></li>
@@ -504,6 +511,7 @@
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.log_utils.html">datumaro.util.log_utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.mask_tools.html">datumaro.util.mask_tools</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.meta_file_util.html">datumaro.util.meta_file_util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datumaro.util.multi_procs_util.html">datumaro.util.multi_procs_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.os_util.html">datumaro.util.os_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.pickle_util.html">datumaro.util.pickle_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.util.samples.html">datumaro.util.samples</a></li>

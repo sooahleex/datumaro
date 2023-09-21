@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>datumaro.plugins.data_formats.datumaro_binary.exporter &#8212; Datumaro 1.4.1 documentation</title>
+    <title>datumaro.plugins.data_formats.datumaro_binary.exporter &#8212; Datumaro 1.6.0rc0 documentation</title>
   
   
   
@@ -517,7 +517,6 @@
         <span class="n">extractor</span><span class="p">:</span> <span class="n">IDataset</span><span class="p">,</span>
         <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">save_images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">save_media</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">image_ext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">default_image_ext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -568,7 +567,6 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">extractor</span><span class="p">,</span>
             <span class="n">save_dir</span><span class="p">,</span>
-            <span class="n">save_images</span><span class="o">=</span><span class="n">save_images</span><span class="p">,</span>
             <span class="n">save_media</span><span class="o">=</span><span class="n">save_media</span><span class="p">,</span>
             <span class="n">image_ext</span><span class="o">=</span><span class="n">image_ext</span><span class="p">,</span>
             <span class="n">default_image_ext</span><span class="o">=</span><span class="n">default_image_ext</span><span class="p">,</span>
@@ -576,12 +574,15 @@
             <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="DatumaroBinaryExporter.create_writer"><a class="viewcode-back" href="../../../../../docs/reference/_autosummary/datumaro.plugins.data_formats.datumaro_binary.exporter.html#datumaro.plugins.data_formats.datumaro_binary.DatumaroBinaryExporter.create_writer">[docs]</a>    <span class="k">def</span> <span class="nf">create_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">images_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pcd_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SubsetWriter</span><span class="p">:</span>
+<div class="viewcode-block" id="DatumaroBinaryExporter.create_writer"><a class="viewcode-back" href="../../../../../docs/reference/_autosummary/datumaro.plugins.data_formats.datumaro_binary.exporter.html#datumaro.plugins.data_formats.datumaro_binary.DatumaroBinaryExporter.create_writer">[docs]</a>    <span class="k">def</span> <span class="nf">create_writer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">images_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pcd_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SubsetWriter</span><span class="p">:</span>
         <span class="n">export_context</span> <span class="o">=</span> <span class="n">ExportContextComponent</span><span class="p">(</span>
             <span class="n">save_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_save_dir</span><span class="p">,</span>
             <span class="n">save_media</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_save_media</span><span class="p">,</span>
             <span class="n">images_dir</span><span class="o">=</span><span class="n">images_dir</span><span class="p">,</span>
             <span class="n">pcd_dir</span><span class="o">=</span><span class="n">pcd_dir</span><span class="p">,</span>
+            <span class="n">video_dir</span><span class="o">=</span><span class="n">video_dir</span><span class="p">,</span>
             <span class="n">crypter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_crypter</span><span class="p">,</span>
             <span class="n">image_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_ext</span><span class="p">,</span>
             <span class="n">default_image_ext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_image_ext</span><span class="p">,</span>
