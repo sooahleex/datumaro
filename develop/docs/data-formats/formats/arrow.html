@@ -777,13 +777,10 @@ using CLI:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">NONE</span></code>: skip saving image.</p></li>
 </ul>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--max-chunk-size</span> <span class="pre">MAX_CHUNK_SIZE</span></code> allow to specify maximum chunk size (batch size) when saving into arrow format.
+<li><p><code class="docutils literal notranslate"><span class="pre">--max-shard-size</span> <span class="pre">MAX_SHARD_SIZE</span></code> allow to specify maximum number of dataset items when saving into arrow format.
 (default: <code class="docutils literal notranslate"><span class="pre">1000</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--num-shards</span> <span class="pre">NUM_SHARDS</span></code> allow to specify the number of shards to generate.
-<code class="docutils literal notranslate"><span class="pre">--num-shards</span></code> and <code class="docutils literal notranslate"><span class="pre">--max-shard-size</span></code> are  mutually exclusive.
-(default: <code class="docutils literal notranslate"><span class="pre">1</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--max-shard-size</span> <span class="pre">MAX_SHARD_SIZE</span></code> allow to specify maximum size of each shard. (e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30)
-<code class="docutils literal notranslate"><span class="pre">--num-shards</span></code> and <code class="docutils literal notranslate"><span class="pre">--max-shard-size</span></code> are  mutually exclusive.
+<code class="docutils literal notranslate"><span class="pre">--num-shards</span></code> and <code class="docutils literal notranslate"><span class="pre">--max-shard-size</span></code> are mutually exclusive.
 (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--num-workers</span> <span class="pre">NUM_WORKERS</span></code> allow to multi-processing for the export. If num_workers = 0, do not use multiprocessing (default: <code class="docutils literal notranslate"><span class="pre">0</span></code>).</p></li>
 </ul>
