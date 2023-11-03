@@ -39,7 +39,7 @@ class DataRepo:
         return directory
 
     def unzip_dataset(_self, uploaded_zip: UploadedFile) -> str:
-        """/home/jihyeony/datumaro/.data_repo/8e1077a5-a97d-47fd-b321-740adf712064
+        """
         Unzip uploaded zip file to a dataset directory
 
         :param uploaded_zip: uploaded zip file from streamlit ui
@@ -63,7 +63,6 @@ class DataRepo:
             dataset_root = find_dataset_root(z.namelist())
             if dataset_root == "":
                 z.extractall(directory)
-                # print("extractall to ", directory)
             else:
                 dataset_root = dataset_root + os.sep
                 start = len(dataset_root)
@@ -72,7 +71,6 @@ class DataRepo:
                     if len(zipinfo.filename) > start:
                         zipinfo.filename = zipinfo.filename[start:]
                         z.extract(zipinfo, directory)
-                # print("extract", dataset_root, "to", directory)
 
         return directory
 
@@ -94,7 +92,7 @@ class DatasetHelper:
     Import dm_dataset from DataRepo
     """
 
-    def __init__(self, dataset_root: str):
+    def __init__(self, dataset_root: str = None):
         self._dataset_dir = dataset_root
         self._detected_formats = None
         self._dm_dataset = None
@@ -117,6 +115,9 @@ class DatasetHelper:
             _self._dm_dataset = Dataset.import_from(path=_self._dataset_dir, format=_self._format)
             _self._val_reports = {}
         return _self._dm_dataset
+
+    def update_dataset(_self, dataset):
+        _self._dm_dataset = dataset
 
     def dataset(_self) -> Dataset:
         return _self._dm_dataset
@@ -150,3 +151,9 @@ class DatasetHelper:
 
     def export(_self, save_dir: str, format: str, **kwargs):
         _self._dm_dataset.export(save_dir=save_dir, format=format, **kwargs)
+
+    def merge(_self, source_datasets, merge_policy, report_path=None, **kwargs):
+        merged_dataset = HLOps.merge(
+            *source_datasets, merge_policy=merge_policy, report_path=report_path, **kwargs
+        )
+        return merged_dataset
