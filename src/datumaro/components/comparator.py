@@ -624,15 +624,15 @@ class TableComparator:
         mid_level_table, mid_level_dict = None, {}
         low_level_table, low_level_dict = None, {}
 
-        if mode in ["high" or "all"]:
+        if mode in ["high", "all"]:
             high_level_table, high_level_dict = self._create_high_level_comparison_table(
                 first_info, second_info
             )
-        elif mode in ["mid" or "all"]:
+        if mode in ["mid", "all"]:
             mid_level_table, mid_level_dict = self._create_mid_level_comparison_table(
                 first_info, second_info
             )
-        elif mode in ["low" or "all"]:
+        if mode in ["low", "all"]:
             low_level_table, low_level_dict = self._create_low_level_comparison_table(first, second)
 
         comparison_dict = dict(
