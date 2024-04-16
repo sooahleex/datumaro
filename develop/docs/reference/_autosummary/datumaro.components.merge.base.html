@@ -511,6 +511,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.project.html">datumaro.components.project</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.registry.html">datumaro.components.registry</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.shift_analyzer.html">datumaro.components.shift_analyzer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datumaro.components.task.html">datumaro.components.task</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.transformer.html">datumaro.components.transformer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.validator.html">datumaro.components.validator</a></li>
 <li class="toctree-l4"><a class="reference internal" href="datumaro.components.visualizer.html">datumaro.components.visualizer</a></li>
@@ -569,33 +570,12 @@ document.write(`
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../supported_plugins.html">Supported Plugins</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DaturmaroApp Reference</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../datumaroapp-reference/overview.html">Overview</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/index.html">Single Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/general.html">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/analyze.html">Analyze</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/visualize.html">Visualize</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/explore.html">Explore</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/transform.html">Transform</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/single_dataset/export.html">Export</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/index.html">Multiple Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/general.html">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/compare.html">Compare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/transform.html">Transform</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/merge.html">Merge</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../datumaroapp-reference/multiple_dataset/export.html">Export</a></li>
-</ul>
-</li>
-</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../explanation/concept.html">Concepts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../explanation/architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../explanation/project.html">Command-Line Workflow</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/plugins/index.html">Plugins</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/plugins/index.html">Plugins</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../explanation/plugins/openvino_plugin.html">OpenVINO™ Inference Interpreter</a></li>
 </ul>
 </li>
@@ -609,7 +589,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes.html">Release Notes</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes.html">Release Notes</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -709,6 +689,11 @@ document.write(`
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datumaro.components.merge.base.Merger.merge_task_types">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_task_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="datumaro.components.dataset_base.html#datumaro.components.dataset_base.IDataset" title="datumaro.components.dataset_base.IDataset"><span class="pre">IDataset</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datumaro.components.task.html#datumaro.components.task.TaskType" title="datumaro.components.task.TaskType"><span class="pre">TaskType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/datumaro/components/merge/base.html#Merger.merge_task_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datumaro.components.merge.base.Merger.merge_task_types" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datumaro.components.merge.base.Merger.save_merge_report">
 <span class="sig-name descname"><span class="pre">save_merge_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/datumaro/components/merge/base.html#Merger.save_merge_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datumaro.components.merge.base.Merger.save_merge_report" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -772,6 +757,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.merge_infos"><code class="docutils literal notranslate"><span class="pre">Merger.merge_infos()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.merge_categories"><code class="docutils literal notranslate"><span class="pre">Merger.merge_categories()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.merge_media_types"><code class="docutils literal notranslate"><span class="pre">Merger.merge_media_types()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.merge_task_types"><code class="docutils literal notranslate"><span class="pre">Merger.merge_task_types()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.save_merge_report"><code class="docutils literal notranslate"><span class="pre">Merger.save_merge_report()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datumaro.components.merge.base.Merger.get_any_label_name"><code class="docutils literal notranslate"><span class="pre">Merger.get_any_label_name()</span></code></a></li>
 </ul>
