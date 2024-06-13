@@ -558,6 +558,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.pickle_util.html">datumaro.util.pickle_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.samples.html">datumaro.util.samples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.scope.html">datumaro.util.scope</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.tabular_util.html">datumaro.util.tabular_util</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.telemetry_stub.html">datumaro.util.telemetry_stub</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.telemetry_utils.html">datumaro.util.telemetry_utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/datumaro.util.tf_util.html">datumaro.util.tf_util</a></li>
@@ -712,7 +713,7 @@ sources automatically.</p>
 dataset. The format can be specified with the <code class="docutils literal notranslate"><span class="pre">-f/--format</span></code> option.
 Extra options should be passed after the main arguments
 and after the <code class="docutils literal notranslate"><span class="pre">--</span></code> separator. Particularly, this is useful to include
-images in the output dataset with <code class="docutils literal notranslate"><span class="pre">--save-images</span></code>.</p>
+images in the output dataset with <code class="docutils literal notranslate"><span class="pre">--save-media</span></code>.</p>
 <p>Usage:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">datum merge [-h] [-m MERGE_POLICY] [-o DST_DIR] [--overwrite] [-f FORMAT] [-p PROJECT_DIR]</span>
 <span class="go">            [-iou IOU_THRESH] [-oconf OUTPUT_CONF_THRESH] [--quorum QUORUM] [-g GROUPS]</span>
@@ -793,7 +794,7 @@ look for groups consisting of <code class="docutils literal notranslate"><span c
 </div>
 </li>
 <li><p>Merge datasets and save in different format</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">datum merge -f voc &lt;path/to/dataset1/&gt;:yolo &lt;path/to/dataset2/&gt;:coco -- --save-images</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">datum merge -f voc &lt;path/to/dataset1/&gt;:yolo &lt;path/to/dataset2/&gt;:coco -- --save-media</span>
 </pre></div>
 </div>
 </li>
