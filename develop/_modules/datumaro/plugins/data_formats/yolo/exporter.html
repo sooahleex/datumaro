@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>datumaro.plugins.data_formats.yolo.exporter &#8212; Datumaro 1.7.0rc0 documentation</title>
+    <title>datumaro.plugins.data_formats.yolo.exporter &#8212; Datumaro 1.7.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../../_static/documentation_options.js?v=b996a231"></script>
+    <script src="../../../../../_static/documentation_options.js?v=030dc6f6"></script>
     <script src="../../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../../../_static/datumaro-logo.png" class="logo__image only-light" alt="Datumaro 1.7.0rc0 documentation - Home"/>
-    <script>document.write(`<img src="../../../../../_static/datumaro-logo.png" class="logo__image only-dark" alt="Datumaro 1.7.0rc0 documentation - Home"/>`);</script>
+    <img src="../../../../../_static/datumaro-logo.png" class="logo__image only-light" alt="Datumaro 1.7.0 documentation - Home"/>
+    <script>document.write(`<img src="../../../../../_static/datumaro-logo.png" class="logo__image only-dark" alt="Datumaro 1.7.0 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -357,6 +357,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">datumaro.components.exporter</span> <span class="kn">import</span> <span class="n">Exporter</span>
 <span class="kn">from</span> <span class="nn">datumaro.components.media</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">from</span> <span class="nn">datumaro.util</span> <span class="kn">import</span> <span class="n">str_to_bool</span>
+<span class="kn">from</span> <span class="nn">datumaro.util.definitions</span> <span class="kn">import</span> <span class="n">SUBSET_NAME_WHITELIST</span>
 
 <span class="kn">from</span> <span class="nn">.format</span> <span class="kn">import</span> <span class="n">YoloPath</span>
 
@@ -548,7 +549,6 @@ document.write(`
 <div class="viewcode-block" id="YoloUltralyticsExporter">
 <a class="viewcode-back" href="../../../../../docs/reference/_autosummary/datumaro.plugins.data_formats.yolo.exporter.html#datumaro.plugins.data_formats.yolo.exporter.YoloUltralyticsExporter">[docs]</a>
 <span class="k">class</span> <span class="nc">YoloUltralyticsExporter</span><span class="p">(</span><span class="n">YoloExporter</span><span class="p">):</span>
-    <span class="n">allowed_subset_names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">}</span>
     <span class="n">must_subset_names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extractor</span><span class="p">:</span> <span class="n">IDataset</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -567,9 +567,9 @@ document.write(`
         <span class="n">subset_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extractor</span><span class="o">.</span><span class="n">subsets</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
         <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">subset_names</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">subset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_subset_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">subset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUBSET_NAME_WHITELIST</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">DatasetExportError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;The allowed subset name is in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">allowed_subset_names</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;The allowed subset name should be in </span><span class="si">{</span><span class="n">SUBSET_NAME_WHITELIST</span><span class="si">}</span><span class="s2">, &quot;</span>
                     <span class="sa">f</span><span class="s1">&#39;so that subset &quot;</span><span class="si">{</span><span class="n">subset</span><span class="si">}</span><span class="s1">&quot; is not allowed.&#39;</span>
                 <span class="p">)</span>
 
