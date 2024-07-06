@@ -2004,3 +2004,53 @@ class Clean(ItemTransform):
             refined_annotations.append(ann)
 
         return self.wrap_item(item, media=refined_media, annotations=refined_annotations)
+
+
+from datumaro.components.algorithms.hash_key_inference.hashkey_util import calculate_hamming
+
+
+class UpdateAnnotations(ItemTransform):
+    def __init__(
+        self,
+        extractor: IDataset,
+        label_hashkeys,
+        explorer=None,
+    ):
+        super().__init__(extractor)
+
+        self._categories = self._extractor.categories()
+        self._label_hashkeys = label_hashkeys
+        self._explorer = explorer
+        self._label_indices = self._extractor.categories()[AnnotationType.label]._indices
+        self._labels = list(self._label_indices.keys())
+
+    def categories(self):
+        return self._categories
+
+    def transform_item(self, item: DatasetItem):
+        hashkey_ = np.unpackbits(self._explorer._get_hash_key_from_item_query(item).hash_key)
+        logits = calculate_hamming(hashkey_, self._label_hashkeys)
+        ind = np.argsort(logits)
+        pseudo = np.array(self._labels)[ind][0]
+        pseudo_annotation = [Label(label=self._label_indices[pseudo])]
+        return self.wrap_item(item, annotations=pseudo_annotation)
+
+
+class UpdateAnnotationsDist(ItemTransform):
+    def __init__(
+        self,
+        extractor: IDataset,
+        results,
+    ):
+        super().__init__(extractor)
+
+    def categories(self):
+        return self._categories
+
+    def transform_item(self, item: DatasetItem):
+        hashkey_ = np.unpackbits(self._explorer._get_hash_key_from_item_query(item).hash_key)
+        logits = calculate_hamming(hashkey_, self._label_hashkeys)
+        ind = np.argsort(logits)
+        pseudo = np.array(self._labels)[ind][0]
+        pseudo_annotation = [Label(label=self._label_indices[pseudo])]
+        return self.wrap_item(item, annotations=pseudo_annotation)

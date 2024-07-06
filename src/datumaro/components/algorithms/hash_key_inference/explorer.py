@@ -61,6 +61,47 @@ class Explorer(HashInference):
         self._database_keys = np.stack(database_keys, axis=0)
         self._item_list = item_list
 
+    def calculate_distances(self, label_hashes):
+        distances = np.zeros((label_hashes.shape[0], self._database_keys.shape[0]))
+        for i, label_hash in enumerate(label_hashes):
+            distances[i] = calculate_hamming(label_hash, self._database_keys)
+        return distances
+
+    def explore_topk_dist(self, topk, label_hashes):
+        import heapq
+        from collections import defaultdict
+
+        priority_queues = []
+        distances = self.calculate_distances(label_hashes)
+        for i in range(label_hashes.shape[0]):
+            queue = []
+            for j in range(self._database_keys.shape[0]):
+                heapq.heappush(queue, (distances[i, j], j))
+            priority_queues.append(queue)
+
+        # 각 레이블에 대해 300개 항목 선택
+        selected_items = defaultdict(list)
+        selected_set = set()
+        label_needs_more_items = []
+
+        for label in range(label_hashes.shape[0]):
+            count = 0
+            while count < topk and priority_queues[label]:
+                dist, item_idx = heapq.heappop(priority_queues[label])
+                if item_idx not in selected_set:
+                    selected_items[label].append(self._item_list[item_idx])
+                    selected_set.add(item_idx)
+                    count += 1
+            if count < topk:
+                label_needs_more_items.append(label)
+        for label in label_needs_more_items:
+            while len(selected_items[label]) < topk and priority_queues[label]:
+                dist, item_idx = heapq.heappop(priority_queues[label])
+                if item_idx not in selected_set:
+                    selected_items[label].append(self._item_list[item_idx])
+                    selected_set.add(item_idx)
+        return selected_items
+
     def explore_topk(
         self,
         query: Union[DatasetItem, str, List[Union[DatasetItem, str]]],

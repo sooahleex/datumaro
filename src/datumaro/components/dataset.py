@@ -137,6 +137,10 @@ class DatasetSubset(IDataset):  # non-owning view
         dataset._source_path = self.parent._source_path
         return dataset
 
+    def update(self, source: Union[DatasetPatch, IDataset, Iterable[DatasetItem]]) -> Dataset:
+        self.parent.update(source)
+        return self
+
 
 class Dataset(IDataset):
     """
