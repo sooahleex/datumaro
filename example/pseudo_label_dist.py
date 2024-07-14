@@ -1,3 +1,13 @@
+"""
+Case2. Top-k Minimum Distance-Based Pseudo Labeling for Unlabeled Datasets
+
+In this experiment, pseudo labels are assigned to items in an unlabeled dataset
+by first calculating the distance between each label and every item in the dataset.
+For each label, the items with the smallest distances (top-k) are selected,
+and these items are assigned the corresponding label as their pseudo label.
+This approach uses a broader context by considering the top-k closest items for each label,
+aiming to improve the accuracy and reliability of the pseudo labeling process.
+"""
 import numpy as np
 
 import datumaro as dm

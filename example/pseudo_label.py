@@ -1,3 +1,12 @@
+"""
+Case 1. Pseudo Labeling via Minimum Distance Assignment for Unlabeled Datasets
+
+This experiment involves assigning pseudo labels to items in an unlabeled dataset
+by calculating the distance between each dataset item and a predefined list of labels.
+For each item, the label with the smallest distance is selected as the pseudo label.
+This method leverages distance metrics to infer the most likely label for each item,
+enhancing the dataset with pseudo labels for further training and analysis.
+"""
 import numpy as np
 
 import datumaro as dm
