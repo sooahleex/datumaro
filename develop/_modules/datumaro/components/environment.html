@@ -30,7 +30,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=8b7c274f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -648,7 +648,7 @@ document.write(`
         <span class="n">merged</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
 
         <span class="k">def</span> <span class="nf">_register</span><span class="p">(</span><span class="n">registry</span><span class="p">:</span> <span class="n">PluginRegistry</span><span class="p">):</span>
-            <span class="n">merged</span><span class="o">.</span><span class="n">register_plugins</span><span class="p">(</span><span class="n">plugin</span> <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">)</span>
+            <span class="n">merged</span><span class="o">.</span><span class="n">register_plugins</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">registry</span><span class="o">.</span><span class="n">_items</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
 
         <span class="k">for</span> <span class="n">env</span> <span class="ow">in</span> <span class="n">envs</span><span class="p">:</span>
             <span class="n">_register</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">extractors</span><span class="p">)</span>
