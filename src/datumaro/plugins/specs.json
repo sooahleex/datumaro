@@ -1408,6 +1408,21 @@
     }
   },
   {
+    "import_path": "datumaro.plugins.data_formats.pdf.PdfDataBase",
+    "plugin_name": "pdf",
+    "plugin_type": "DatasetBase"
+  },
+  {
+    "import_path": "datumaro.plugins.data_formats.pdf.PdfDataImporter",
+    "plugin_name": "tabular",
+    "plugin_type": "Importer",
+    "metadata": {
+      "file_extensions": [
+        ".pdf"
+      ]
+    }
+  },
+  {
     "import_path": "datumaro.plugins.data_formats.tf_detection_api.base.TfDetectionApiBase",
     "plugin_name": "tf_detection_api",
     "plugin_type": "DatasetBase",
