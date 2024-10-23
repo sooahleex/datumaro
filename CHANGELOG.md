@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (<https://github.com/openvinotoolkit/datumaro/pull/1635>)
 - Optimize path assignment to handle point cloud in JSON without images
   (<https://github.com/openvinotoolkit/datumaro/pull/1643>)
+- Add documentation for framework conversion
+  (<https://github.com/openvinotoolkit/datumaro/pull/1659>)
 
 ### Bug fixes
 - Fix assertion to compare hashkeys against expected value
