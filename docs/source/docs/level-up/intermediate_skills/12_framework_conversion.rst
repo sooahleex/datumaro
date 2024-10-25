@@ -38,7 +38,7 @@ Supported Tasks
       multi_framework_dataset = FrameworkConverter(dm_dataset, subset="train", task="classification")
       train_dataset = multi_framework_dataset.to_framework(framework="torch", transform=transform)
 
-    Thourgh this, we convert the dataset to PyTorch format
+    Through this, we convert the dataset to PyTorch format
 
     .. code-block:: python
 
