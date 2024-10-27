@@ -889,9 +889,6 @@ class RemapLabels(ItemTransform, CliPlugin):
 
         self._map_id = lambda src_id: id_mapping.get(src_id, None)
 
-        for label in dst_label_cat:
-            if label.parent not in dst_label_cat:
-                label.parent = ""
         self._categories[AnnotationType.label] = dst_label_cat
 
     def categories(self):
